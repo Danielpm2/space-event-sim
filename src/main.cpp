@@ -1,4 +1,6 @@
 #include "render/FullscreenTriangle.h"
+#include "render/ImGuiLayer.h"
+#include "render/MainMenu.h"
 #include "render/Shader.h"
 #include "render/Window.h"
 
@@ -7,13 +9,16 @@
 
 #include <cstdio>
 #include <exception>
+#include <string>
+#include <vector>
 
 int main() {
     try {
         render::Window window(1280, 720, "Space Event Simulator");
         render::Shader menuBg("fullscreen.vert.glsl", "menu_bg.frag.glsl");
         render::FullscreenTriangle triangle;
-
+        render::ImGuiLayer imgui(window.handle());
+        const std::vector<std::string> placeholders = {"Black Hole", "Pulsar"};
         while (!window.shouldClose()) {
             window.pollEvents();
             if (glfwGetKey(window.handle(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -29,6 +34,11 @@ int main() {
             menuBg.set("uResolution", glm::vec2(w, h));
             menuBg.set("uTime", static_cast<float>(window.time()));
             triangle.draw();
+
+            imgui.beginFrame();
+            if (render::drawMainMenu(placeholders).quit)
+                window.requestClose();
+            imgui.endFrame();
 
             window.swapBuffers();
         }

@@ -47,6 +47,23 @@ FetchContent_Declare(glm
 
 FetchContent_MakeAvailable(glfw glm)
 
+# --- Dear ImGui (no CMake of its own; build the needed sources) --------------
+FetchContent_Declare(imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG        v1.91.9
+    GIT_SHALLOW    TRUE)
+FetchContent_MakeAvailable(imgui)
+
+add_library(imgui STATIC
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
+target_link_libraries(imgui PUBLIC glfw ${CMAKE_DL_LIBS})
+
 # --- GLAD (vendored) --------------------------------------------------------
 add_library(glad STATIC external/glad/src/glad.c)
 target_include_directories(glad PUBLIC external/glad/include)
@@ -58,9 +75,11 @@ add_executable(spacesim
     src/render/Window.cpp
     src/render/Paths.cpp
     src/render/Shader.cpp
+    src/render/ImGuiLayer.cpp
+    src/render/MainMenu.cpp
 )
 target_include_directories(spacesim PRIVATE src)
-target_link_libraries(spacesim PRIVATE glfw glad glm::glm)
+target_link_libraries(spacesim PRIVATE glfw glad glm::glm imgui)
 target_compile_definitions(spacesim PRIVATE SHADER_SOURCE_DIR="${CMAKE_SOURCE_DIR}/shaders")
 
 # Shaders are loaded at runtime from <exe dir>/shaders.
