@@ -56,9 +56,17 @@ target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 add_executable(spacesim
     src/main.cpp
     src/render/Window.cpp
+    src/render/Paths.cpp
+    src/render/Shader.cpp
 )
 target_include_directories(spacesim PRIVATE src)
 target_link_libraries(spacesim PRIVATE glfw glad glm::glm)
+target_compile_definitions(spacesim PRIVATE SHADER_SOURCE_DIR="${CMAKE_SOURCE_DIR}/shaders")
+
+# Shaders are loaded at runtime from <exe dir>/shaders.
+add_custom_command(TARGET spacesim POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:spacesim>/shaders)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(spacesim PRIVATE -Wall -Wextra)
