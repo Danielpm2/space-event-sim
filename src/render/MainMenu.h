@@ -11,6 +11,7 @@ struct MenuResult {
 };
 
 // Draws the centered main-menu window; call between ImGuiLayer begin/endFrame.
-MenuResult drawMainMenu(const std::vector<std::string>& entries);
+// A non-empty `error` is shown under the entries (e.g. a shader failure).
+MenuResult drawMainMenu(const std::vector<std::string>& entries, const std::string& error);
 
 } // namespace render

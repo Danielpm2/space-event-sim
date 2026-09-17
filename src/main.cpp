@@ -1,50 +1,37 @@
-#include "render/FullscreenTriangle.h"
-#include "render/ImGuiLayer.h"
-#include "render/MainMenu.h"
-#include "render/Shader.h"
-#include "render/Window.h"
+#include "render/App.h"
+#include "render/registry.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
+#include <algorithm>
+#include <cctype>
 #include <cstdio>
+#include <cstring>
 #include <exception>
 #include <string>
-#include <vector>
 
-int main() {
+namespace {
+
+std::string lower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
+    return s;
+}
+
+} // namespace
+
+// Usage: spacesim [--sim <name>]   (e.g. --sim pulsar) skips the menu.
+int main(int argc, char** argv) {
     try {
-        render::Window window(1280, 720, "Space Event Simulator");
-        render::Shader menuBg("fullscreen.vert.glsl", "menu_bg.frag.glsl");
-        render::FullscreenTriangle triangle;
-        render::ImGuiLayer imgui(window.handle());
-        const std::vector<std::string> placeholders = {"Black Hole", "Pulsar"};
-        while (!window.shouldClose()) {
-            window.pollEvents();
-            if (glfwGetKey(window.handle(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
-                window.requestClose();
-
-            int w, h;
-            window.framebufferSize(w, h);
-            glViewport(0, 0, w, h);
-            glClearColor(0.f, 0.f, 0.f, 1.f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            menuBg.use();
-            menuBg.set("uResolution", glm::vec2(w, h));
-            menuBg.set("uTime", static_cast<float>(window.time()));
-            triangle.draw();
-
-            imgui.beginFrame();
-            if (render::drawMainMenu(placeholders).quit)
-                window.requestClose();
-            imgui.endFrame();
-
-            window.swapBuffers();
+        render::App app;
+        for (int i = 1; i + 1 < argc; ++i) {
+            if (std::strcmp(argv[i], "--sim") != 0)
+                continue;
+            const auto& entries = render::registry();
+            for (size_t k = 0; k < entries.size(); ++k)
+                if (lower(entries[k].name) == lower(argv[i + 1]))
+                    app.launchSimulation(k);
         }
+        return app.run();
     } catch (const std::exception& e) {
         std::fprintf(stderr, "Fatal: %s\n", e.what());
         return 1;
     }
-    return 0;
 }

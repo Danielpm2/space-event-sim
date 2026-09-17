@@ -4,7 +4,7 @@
 
 namespace render {
 
-MenuResult drawMainMenu(const std::vector<std::string>& entries) {
+MenuResult drawMainMenu(const std::vector<std::string>& entries, const std::string& error) {
     MenuResult result;
 
     const ImGuiViewport* vp = ImGui::GetMainViewport();
@@ -22,6 +22,8 @@ MenuResult drawMainMenu(const std::vector<std::string>& entries) {
                 result.selected = static_cast<int>(i);
         }
         ImGui::Separator();
+        if (!error.empty())
+            ImGui::TextColored(ImVec4(1.f, 0.4f, 0.4f, 1.f), "%s", error.c_str());
         if (ImGui::Button("Quit", ImVec2(-1.f, 0.f)))
             result.quit = true;
     }

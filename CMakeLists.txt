@@ -69,17 +69,27 @@ add_library(glad STATIC external/glad/src/glad.c)
 target_include_directories(glad PUBLIC external/glad/include)
 target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 
+# --- Core: simulation logic. Links only GLM, so GL/ImGui cannot leak in. ----
+add_library(sim_core STATIC
+    src/core/OrbitCamera.cpp
+)
+target_include_directories(sim_core PUBLIC src)
+target_link_libraries(sim_core PUBLIC glm::glm)
+
 # --- App --------------------------------------------------------------------
 add_executable(spacesim
     src/main.cpp
+    src/render/App.cpp
     src/render/Window.cpp
     src/render/Paths.cpp
     src/render/Shader.cpp
     src/render/ImGuiLayer.cpp
     src/render/MainMenu.cpp
+    src/render/registry.cpp
+    src/render/StubRenderer.cpp
 )
 target_include_directories(spacesim PRIVATE src)
-target_link_libraries(spacesim PRIVATE glfw glad glm::glm imgui)
+target_link_libraries(spacesim PRIVATE sim_core glfw glad glm::glm imgui)
 target_compile_definitions(spacesim PRIVATE SHADER_SOURCE_DIR="${CMAKE_SOURCE_DIR}/shaders")
 
 # Shaders are loaded at runtime from <exe dir>/shaders.
