@@ -72,6 +72,7 @@ target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 # --- Core: simulation logic. Links only GLM, so GL/ImGui cannot leak in. ----
 add_library(sim_core STATIC
     src/core/OrbitCamera.cpp
+    src/core/PulsarSim.cpp
 )
 target_include_directories(sim_core PUBLIC src)
 target_link_libraries(sim_core PUBLIC glm::glm)
