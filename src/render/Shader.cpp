@@ -13,14 +13,31 @@ namespace render {
 
 namespace {
 
-std::string readFile(const std::string& name) {
+std::string readFile(const std::string& name, int depth = 0) {
+    if (depth > 8)
+        throw std::runtime_error("Shader #include nesting too deep at: " + name);
     const auto path = shaderDir() / name;
     std::ifstream in(path, std::ios::binary);
     if (!in)
         throw std::runtime_error("Cannot open shader file: " + path.string());
-    std::ostringstream ss;
-    ss << in.rdbuf();
-    return ss.str();
+
+    // Expand `#include "file"` lines relative to the shader directory.
+    std::string out, line;
+    while (std::getline(in, line)) {
+        const auto hash = line.find_first_not_of(" \t");
+        if (hash != std::string::npos && line.compare(hash, 8, "#include") == 0) {
+            const auto a = line.find('"', hash);
+            const auto b = line.find('"', a == std::string::npos ? a : a + 1);
+            if (a == std::string::npos || b == std::string::npos)
+                throw std::runtime_error("Malformed #include in " + name + ": " + line);
+            out += readFile(line.substr(a + 1, b - a - 1), depth + 1);
+            out += '\n';
+        } else {
+            out += line;
+            out += '\n';
+        }
+    }
+    return out;
 }
 
 GLuint compile(GLenum type, const std::string& file) {

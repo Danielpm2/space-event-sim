@@ -23,6 +23,14 @@ glm::vec3 OrbitCamera::position() const {
                                          std::cos(pitch) * std::cos(yaw));
 }
 
+glm::vec3 OrbitCamera::forward() const { return glm::normalize(target - position()); }
+
+glm::vec3 OrbitCamera::right() const {
+    return glm::normalize(glm::cross(forward(), glm::vec3(0.f, 1.f, 0.f)));
+}
+
+glm::vec3 OrbitCamera::up() const { return glm::cross(right(), forward()); }
+
 glm::mat4 OrbitCamera::view() const {
     return glm::lookAt(position(), target, glm::vec3(0.f, 1.f, 0.f));
 }

@@ -19,6 +19,9 @@ public:
     void zoom(float factor); // factor > 1 moves away
 
     glm::vec3 position() const;
+    glm::vec3 forward() const;
+    glm::vec3 right() const;
+    glm::vec3 up() const;
     glm::mat4 view() const;
     glm::mat4 projection(float aspect) const;
 };
