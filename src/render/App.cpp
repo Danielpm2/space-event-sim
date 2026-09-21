@@ -36,6 +36,7 @@ void App::launchSimulation(size_t index) {
         auto renderer = entry.makeRenderer();
         m_sim = entry.makeSimulation();
         m_renderer = std::move(renderer);
+        m_defaultCamera = m_sim->camera;
     } catch (const std::exception& e) {
         m_error = e.what();
         std::fprintf(stderr, "%s\n", m_error.c_str());
@@ -58,9 +59,27 @@ void App::drawSimulationUi(int, int) {
         for (auto& p : m_sim->params())
             ImGui::SliderFloat(p.name.c_str(), p.value, p.min, p.max);
         ImGui::Separator();
+        if (ImGui::Button("Reset camera"))
+            m_sim->camera = m_defaultCamera;
+        ImGui::SameLine();
         if (ImGui::Button("Back to menu (Esc)"))
             backToMenu();
+        ImGui::Separator();
+        ImGui::TextDisabled("Drag: orbit   Scroll / W,S: zoom\nArrows: orbit   F11: fullscreen");
     }
+    ImGui::End();
+}
+
+void App::drawFps() {
+    const ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(ImVec2(vp->Pos.x + vp->Size.x - 12.f, vp->Pos.y + 12.f), ImGuiCond_Always,
+                            ImVec2(1.f, 0.f));
+    ImGui::SetNextWindowBgAlpha(0.35f);
+    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                                   ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs |
+                                   ImGuiWindowFlags_NoNav;
+    if (ImGui::Begin("##fps", nullptr, flags))
+        ImGui::Text("%.0f FPS (%.2f ms)", m_imgui.fps(), 1000.f / std::max(m_imgui.fps(), 1.f));
     ImGui::End();
 }
 
@@ -145,6 +164,7 @@ int App::run() {
             else if (r.selected >= 0)
                 launchSimulation(static_cast<size_t>(r.selected));
         }
+        drawFps();
         m_imgui.endFrame();
 
         if (!m_capturePath.empty() && --m_captureFrames <= 0) {

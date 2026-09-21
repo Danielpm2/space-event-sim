@@ -29,6 +29,7 @@ private:
     void backToMenu();
     void handleCameraInput(double dt);
     void drawSimulationUi(int width, int height);
+    void drawFps();
     bool keyPressedOnce(int key);
 
     Window m_window;
@@ -38,6 +39,7 @@ private:
 
     std::unique_ptr<core::Simulation> m_sim;
     std::unique_ptr<SimRenderer> m_renderer;
+    core::OrbitCamera m_defaultCamera;
     std::string m_error;
     std::string m_capturePath;
     int m_captureFrames = 0;
