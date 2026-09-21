@@ -88,6 +88,8 @@ add_executable(spacesim
     src/render/MainMenu.cpp
     src/render/registry.cpp
     src/render/StubRenderer.cpp
+    src/render/PulsarRenderer.cpp
+    src/render/Screenshot.cpp
 )
 target_include_directories(spacesim PRIVATE src)
 target_link_libraries(spacesim PRIVATE sim_core glfw glad glm::glm imgui)

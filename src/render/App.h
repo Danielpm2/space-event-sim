@@ -19,6 +19,11 @@ public:
     App();
     int run();
     void launchSimulation(size_t index);
+    // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
+    void captureAndExit(std::string path, int frames) {
+        m_capturePath = std::move(path);
+        m_captureFrames = frames;
+    }
 
 private:
     void backToMenu();
@@ -33,6 +38,8 @@ private:
     std::unique_ptr<core::Simulation> m_sim;
     std::unique_ptr<SimRenderer> m_renderer;
     std::string m_error;
+    std::string m_capturePath;
+    int m_captureFrames = 0;
     bool m_keyDown[512] = {};
 };
 

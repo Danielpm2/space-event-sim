@@ -17,11 +17,13 @@ std::string lower(std::string s) {
 
 } // namespace
 
-// Usage: spacesim [--sim <name>]   (e.g. --sim pulsar) skips the menu.
+// Usage: spacesim [--sim <name>] [--screenshot <file.ppm>]
 int main(int argc, char** argv) {
     try {
         render::App app;
         for (int i = 1; i + 1 < argc; ++i) {
+            if (std::strcmp(argv[i], "--screenshot") == 0)
+                app.captureAndExit(argv[i + 1], 90);
             if (std::strcmp(argv[i], "--sim") != 0)
                 continue;
             const auto& entries = render::registry();

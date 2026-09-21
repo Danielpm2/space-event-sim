@@ -1,6 +1,7 @@
 #include "render/App.h"
 
 #include "render/MainMenu.h"
+#include "render/Screenshot.h"
 #include "render/registry.h"
 
 #include <glad/glad.h>
@@ -113,6 +114,12 @@ int App::run() {
                 launchSimulation(static_cast<size_t>(r.selected));
         }
         m_imgui.endFrame();
+
+        if (!m_capturePath.empty() && --m_captureFrames <= 0) {
+            if (!saveScreenshotPPM(m_capturePath, w, h))
+                std::fprintf(stderr, "Cannot write %s\n", m_capturePath.c_str());
+            m_window.requestClose();
+        }
 
         m_window.swapBuffers();
     }
