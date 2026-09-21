@@ -88,7 +88,6 @@ add_executable(spacesim
     src/render/ImGuiLayer.cpp
     src/render/MainMenu.cpp
     src/render/registry.cpp
-    src/render/StubRenderer.cpp
     src/render/PulsarRenderer.cpp
     src/render/BlackHoleRenderer.cpp
     src/render/Screenshot.cpp
