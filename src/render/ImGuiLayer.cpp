@@ -38,4 +38,11 @@ void ImGuiLayer::endFrame() {
 bool ImGuiLayer::wantsMouse() const { return ImGui::GetIO().WantCaptureMouse; }
 bool ImGuiLayer::wantsKeyboard() const { return ImGui::GetIO().WantCaptureKeyboard; }
 
+ImGuiLayer::MouseState ImGuiLayer::mouse() const {
+    const ImGuiIO& io = ImGui::GetIO();
+    return {io.MouseDelta.x, io.MouseDelta.y, io.MouseWheel, io.MouseDown[0]};
+}
+
+float ImGuiLayer::fps() const { return ImGui::GetIO().Framerate; }
+
 } // namespace render

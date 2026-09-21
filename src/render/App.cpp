@@ -9,6 +9,7 @@
 #include <imgui.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <exception>
 #include <vector>
@@ -63,6 +64,34 @@ void App::drawSimulationUi(int, int) {
     ImGui::End();
 }
 
+void App::handleCameraInput(double dt) {
+    core::OrbitCamera& cam = m_sim->camera;
+    const auto mouse = m_imgui.mouse();
+
+    if (!mouse.leftDown)
+        m_dragging = false;
+    else if (!m_dragging && !m_wasMouseDown && !m_imgui.wantsMouse())
+        m_dragging = true;
+    m_wasMouseDown = mouse.leftDown;
+
+    if (m_dragging)
+        cam.orbit(-mouse.dx * 0.005f, mouse.dy * 0.005f);
+    if (mouse.scroll != 0.f && !m_imgui.wantsMouse())
+        cam.zoom(std::exp(-mouse.scroll * 0.1f));
+
+    if (!m_imgui.wantsKeyboard()) {
+        GLFWwindow* win = m_window.handle();
+        const float step = static_cast<float>(dt);
+        const float turn = 1.5f * step;
+        if (glfwGetKey(win, GLFW_KEY_LEFT) == GLFW_PRESS)  cam.orbit(-turn, 0.f);
+        if (glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS) cam.orbit(turn, 0.f);
+        if (glfwGetKey(win, GLFW_KEY_UP) == GLFW_PRESS)    cam.orbit(0.f, turn);
+        if (glfwGetKey(win, GLFW_KEY_DOWN) == GLFW_PRESS)  cam.orbit(0.f, -turn);
+        if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS)     cam.zoom(std::exp(-1.0f * step));
+        if (glfwGetKey(win, GLFW_KEY_S) == GLFW_PRESS)     cam.zoom(std::exp(1.0f * step));
+    }
+}
+
 int App::run() {
     double last = m_window.time();
     std::vector<std::string> names;
@@ -79,6 +108,10 @@ int App::run() {
         const bool esc = keyPressedOnce(GLFW_KEY_ESCAPE);
         if (keyPressedOnce(GLFW_KEY_F11))
             m_window.toggleFullscreen();
+
+        m_imgui.beginFrame();
+        if (m_sim)
+            handleCameraInput(dt);
 
         int w, h;
         m_window.framebufferSize(w, h);
@@ -103,7 +136,6 @@ int App::run() {
             }
         }
 
-        m_imgui.beginFrame();
         if (m_sim) {
             drawSimulationUi(w, h);
         } else {

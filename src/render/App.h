@@ -27,6 +27,7 @@ public:
 
 private:
     void backToMenu();
+    void handleCameraInput(double dt);
     void drawSimulationUi(int width, int height);
     bool keyPressedOnce(int key);
 
@@ -40,6 +41,8 @@ private:
     std::string m_error;
     std::string m_capturePath;
     int m_captureFrames = 0;
+    bool m_dragging = false;
+    bool m_wasMouseDown = false;
     bool m_keyDown[512] = {};
 };
 
