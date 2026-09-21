@@ -73,6 +73,7 @@ target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 add_library(sim_core STATIC
     src/core/OrbitCamera.cpp
     src/core/PulsarSim.cpp
+    src/core/BlackHoleSim.cpp
 )
 target_include_directories(sim_core PUBLIC src)
 target_link_libraries(sim_core PUBLIC glm::glm)
@@ -89,6 +90,7 @@ add_executable(spacesim
     src/render/registry.cpp
     src/render/StubRenderer.cpp
     src/render/PulsarRenderer.cpp
+    src/render/BlackHoleRenderer.cpp
     src/render/Screenshot.cpp
 )
 target_include_directories(spacesim PRIVATE src)
