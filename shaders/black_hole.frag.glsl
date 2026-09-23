@@ -64,9 +64,9 @@ float rotatingPattern(float r, float theta) {
 }
 
 vec3 tempColor(float t) {
-    vec3 c = mix(vec3(1.0, 0.22, 0.04), vec3(1.0, 0.68, 0.28), smoothstep(0.0, 0.5, t));
-    c = mix(c, vec3(1.0, 0.94, 0.85), smoothstep(0.4, 1.0, t));
-    return mix(c, vec3(0.75, 0.85, 1.0), smoothstep(1.0, 1.8, t));
+    vec3 c = mix(vec3(0.9, 0.12, 0.02), vec3(1.0, 0.55, 0.12), smoothstep(0.0, 0.45, t));
+    c = mix(c, vec3(1.0, 0.88, 0.6), smoothstep(0.45, 1.1, t));
+    return mix(c, vec3(0.8, 0.88, 1.0), smoothstep(1.3, 2.2, t));
 }
 
 // Emitted light (premultiplied by opacity in .a-less form) for a ray hitting the disk at P.
@@ -83,7 +83,7 @@ vec4 shadeDisk(vec3 P, vec3 rayDir) {
     float g = doppler * grav;
 
     float temp = pow(uIsco / r, 0.75) * g;
-    float pat = 0.45 + 1.1 * rotatingPattern(r, theta);
+    float pat = 0.25 + 1.5 * rotatingPattern(r, theta);
 
     float edge = smoothstep(uIsco, uIsco * 1.08, r) * (1.0 - smoothstep(uDiskOuter * 0.7, uDiskOuter, r));
     float alpha = edge * mix(0.95, 0.5, smoothstep(uIsco, uDiskOuter, r));
