@@ -96,10 +96,12 @@ target_include_directories(spacesim PRIVATE src)
 target_link_libraries(spacesim PRIVATE sim_core glfw glad glm::glm imgui)
 target_compile_definitions(spacesim PRIVATE SHADER_SOURCE_DIR="${CMAKE_SOURCE_DIR}/shaders")
 
-# Shaders are loaded at runtime from <exe dir>/shaders.
-add_custom_command(TARGET spacesim POST_BUILD
+# Shaders are loaded at runtime from <exe dir>/shaders; refreshed on every build.
+add_custom_target(copy_shaders ALL
+    COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:spacesim>/shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:spacesim>/shaders)
+add_dependencies(copy_shaders spacesim)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(spacesim PRIVATE -Wall -Wextra)
