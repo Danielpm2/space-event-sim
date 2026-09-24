@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/FullscreenTriangle.h"
+#include "render/Primitives.h"
 #include "render/Shader.h"
 #include "render/SimRenderer.h"
 
@@ -18,7 +19,6 @@ public:
     void draw(const core::Simulation& sim, int width, int height) override;
 
 private:
-    void buildSphere();
     void buildCone();
 
     Shader m_sky;
@@ -27,13 +27,12 @@ private:
     Shader m_halo;
     Shader m_particles;
     FullscreenTriangle m_fullscreen;
+    SphereMesh m_sphere;
+    StreamBuffer4 m_particleBuffer;
+    QuadStrip m_quad;
 
-    GLuint m_sphereVao = 0, m_sphereVbo = 0, m_sphereEbo = 0;
-    GLsizei m_sphereIndexCount = 0;
     GLuint m_coneVao = 0, m_coneVbo = 0, m_coneEbo = 0;
     GLsizei m_coneIndexCount = 0;
-    GLuint m_particleVao = 0, m_particleVbo = 0;
-    GLuint m_emptyVao = 0;
 };
 
 } // namespace render
