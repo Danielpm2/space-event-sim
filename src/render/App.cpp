@@ -45,6 +45,13 @@ void App::launchSimulation(size_t index) {
     }
 }
 
+void App::warpSimulation(double seconds) {
+    if (!m_sim)
+        return;
+    for (; seconds > 0.0; seconds -= 0.05)
+        m_sim->update(std::min(seconds, 0.05));
+}
+
 void App::backToMenu() {
     m_renderer.reset();
     m_sim.reset();

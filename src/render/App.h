@@ -19,6 +19,8 @@ public:
     App();
     int run();
     void launchSimulation(size_t index);
+    // Dev aid: fast-forward the running simulation by `seconds`.
+    void warpSimulation(double seconds);
     // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
     void captureAndExit(std::string path, int frames) {
         m_capturePath = std::move(path);

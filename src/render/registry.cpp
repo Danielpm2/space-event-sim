@@ -2,8 +2,10 @@
 
 #include "core/BlackHoleSim.h"
 #include "core/PulsarSim.h"
+#include "core/SupernovaSim.h"
 #include "render/BlackHoleRenderer.h"
 #include "render/PulsarRenderer.h"
+#include "render/SupernovaRenderer.h"
 
 namespace render {
 
@@ -15,6 +17,9 @@ const std::vector<SimEntry>& registry() {
         {"Pulsar",
          [] { return std::make_unique<core::PulsarSim>(); },
          [] { return std::make_unique<PulsarRenderer>(); }},
+        {"Supernova",
+         [] { return std::make_unique<core::SupernovaSim>(); },
+         [] { return std::make_unique<SupernovaRenderer>(); }},
     };
     return entries;
 }
