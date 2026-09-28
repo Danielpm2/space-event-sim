@@ -7,6 +7,7 @@ uniform mat4 uViewProj;
 uniform vec3 uAxis;
 uniform vec3 uU;
 uniform vec3 uV;
+uniform vec3 uOrigin; // apex; defaults to (0,0,0) when unset
 uniform float uLength;
 uniform float uTanHalf;
 
@@ -17,7 +18,7 @@ out vec3 vWorld;
 void main() {
     vec3 radial = cos(aParam.x) * uU + sin(aParam.x) * uV;
     float d = aParam.y * uLength;
-    vWorld = uAxis * d + radial * (d * uTanHalf);
+    vWorld = uOrigin + uAxis * d + radial * (d * uTanHalf);
 
     float cosA = inversesqrt(1.0 + uTanHalf * uTanHalf);
     vNormal = radial * cosA - uAxis * (uTanHalf * cosA);

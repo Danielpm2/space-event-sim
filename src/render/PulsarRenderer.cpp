@@ -87,6 +87,8 @@ void PulsarRenderer::draw(const core::Simulation& base, int width, int height) {
         m_particles.set("uPointSize", 0.1f);
         m_particles.set("uScreenHeight", static_cast<float>(height));
         m_particles.set("uGlow", sim.glow);
+        m_particles.set("uTintNew", glm::vec3(0.8f, 0.95f, 1.f));
+        m_particles.set("uTintOld", glm::vec3(0.25f, 0.45f, 1.f));
         m_particleBuffer.draw(GL_POINTS);
     }
 

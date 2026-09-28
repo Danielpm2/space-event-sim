@@ -82,7 +82,7 @@ float MergerSim::wellDepth(float x, float z) const {
     constexpr float soft = 0.8f;
     if (m_merged) {
         const float M = mass1 + mass2;
-        return -0.9f * M * (0.75f + 0.25f * std::exp(-m_sinceMerge / 4.f)) / std::sqrt(x * x + z * z + soft);
+        return -1.5f * M * (0.75f + 0.25f * std::exp(-m_sinceMerge / 4.f)) / std::sqrt(x * x + z * z + soft);
     }
     float h = 0.f;
     for (int i = 0; i < 2; ++i) {
@@ -93,7 +93,7 @@ float MergerSim::wellDepth(float x, float z) const {
         const float bx = sign * share * m_a * std::cos(m_phase);
         const float bz = sign * share * m_a * std::sin(m_phase);
         const float dx = x - bx, dz = z - bz;
-        h -= 0.9f * m / std::sqrt(dx * dx + dz * dz + soft);
+        h -= 1.5f * m / std::sqrt(dx * dx + dz * dz + soft);
     }
     return h;
 }
@@ -102,7 +102,7 @@ float MergerSim::spacetimeHeight(float x, float z) const {
     const float r = std::sqrt(x * x + z * z);
     const float omega = m_merged ? m_omegaAtMerge * (0.4f + 0.6f * std::exp(-m_sinceMerge / 1.5f)) : orbitalOmega();
     const float k = 2.f * omega / kWaveSpeed;
-    const float ripple = 0.4f * gwAmplitude() * std::sin(2.f * m_phase - k * r) / std::sqrt(1.f + 0.5f * r);
+    const float ripple = 1.0f * gwAmplitude() * std::sin(2.f * m_phase - k * r) / std::sqrt(1.f + 0.5f * r);
     return kGridY + wellDepth(x, z) + ripple;
 }
 
