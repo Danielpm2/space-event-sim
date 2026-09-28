@@ -50,6 +50,48 @@ void SphereMesh::draw() const {
     glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
 }
 
+ConeMesh::ConeMesh() {
+    const int around = 48, along = 16;
+    std::vector<float> v;
+    std::vector<unsigned> idx;
+    for (int i = 0; i <= along; ++i) {
+        for (int j = 0; j <= around; ++j) {
+            v.push_back(2.f * glm::pi<float>() * j / around);
+            v.push_back(static_cast<float>(i) / along);
+        }
+    }
+    for (int i = 0; i < along; ++i) {
+        for (int j = 0; j < around; ++j) {
+            const unsigned a = i * (around + 1) + j, b = a + around + 1;
+            idx.insert(idx.end(), {a, b, a + 1, a + 1, b, b + 1});
+        }
+    }
+    m_indexCount = static_cast<GLsizei>(idx.size());
+
+    glGenVertexArrays(1, &m_vao);
+    glGenBuffers(1, &m_vbo);
+    glGenBuffers(1, &m_ebo);
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(float), v.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(unsigned), idx.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+    glBindVertexArray(0);
+}
+
+ConeMesh::~ConeMesh() {
+    glDeleteVertexArrays(1, &m_vao);
+    glDeleteBuffers(1, &m_vbo);
+    glDeleteBuffers(1, &m_ebo);
+}
+
+void ConeMesh::draw() const {
+    glBindVertexArray(m_vao);
+    glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
+}
+
 StreamBuffer4::StreamBuffer4() {
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);

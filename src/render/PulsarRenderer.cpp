@@ -16,46 +16,7 @@ PulsarRenderer::PulsarRenderer()
       m_star("pulsar.vert.glsl", "pulsar.frag.glsl"),
       m_beam("beam.vert.glsl", "beam.frag.glsl"),
       m_halo("halo.vert.glsl", "halo.frag.glsl"),
-      m_particles("particles.vert.glsl", "particles.frag.glsl") {
-    buildCone();
-}
-
-PulsarRenderer::~PulsarRenderer() {
-    glDeleteVertexArrays(1, &m_coneVao);
-    glDeleteBuffers(1, &m_coneVbo);
-    glDeleteBuffers(1, &m_coneEbo);
-}
-
-void PulsarRenderer::buildCone() {
-    const int around = 48, along = 16;
-    std::vector<float> v;
-    std::vector<unsigned> idx;
-    for (int i = 0; i <= along; ++i) {
-        for (int j = 0; j <= around; ++j) {
-            v.push_back(2.f * glm::pi<float>() * j / around);
-            v.push_back(static_cast<float>(i) / along);
-        }
-    }
-    for (int i = 0; i < along; ++i) {
-        for (int j = 0; j < around; ++j) {
-            const unsigned a = i * (around + 1) + j, b = a + around + 1;
-            idx.insert(idx.end(), {a, b, a + 1, a + 1, b, b + 1});
-        }
-    }
-    m_coneIndexCount = static_cast<GLsizei>(idx.size());
-
-    glGenVertexArrays(1, &m_coneVao);
-    glGenBuffers(1, &m_coneVbo);
-    glGenBuffers(1, &m_coneEbo);
-    glBindVertexArray(m_coneVao);
-    glBindBuffer(GL_ARRAY_BUFFER, m_coneVbo);
-    glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(float), v.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_coneEbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(unsigned), idx.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
-    glBindVertexArray(0);
-}
+      m_particles("particles.vert.glsl", "particles.frag.glsl") {}
 
 void PulsarRenderer::draw(const core::Simulation& base, int width, int height) {
     const auto& sim = static_cast<const core::PulsarSim&>(base);
@@ -93,7 +54,6 @@ void PulsarRenderer::draw(const core::Simulation& base, int width, int height) {
     m_beam.set("uViewProj", viewProj);
     m_beam.set("uCamPos", camPos);
     m_beam.set("uLength", core::PulsarSim::kBeamLength);
-    glBindVertexArray(m_coneVao);
     const float tanHalf = std::tan(sim.beamHalfAngle());
     const glm::vec3 helper = std::abs(magAxis.y) < 0.9f ? glm::vec3(0.f, 1.f, 0.f) : glm::vec3(1.f, 0.f, 0.f);
     for (float sign : {1.f, -1.f}) {
@@ -108,7 +68,7 @@ void PulsarRenderer::draw(const core::Simulation& base, int width, int height) {
             m_beam.set("uColor", inner ? glm::vec3(0.75f, 0.9f, 1.f) : glm::vec3(0.3f, 0.55f, 1.f));
             m_beam.set("uIntensity", (inner ? 0.7f : 0.3f) * sim.glow);
             m_beam.set("uFlash", flash * (inner ? 0.5f : 0.2f));
-            glDrawElements(GL_TRIANGLES, m_coneIndexCount, GL_UNSIGNED_INT, nullptr);
+            m_cone.draw();
         }
     }
 

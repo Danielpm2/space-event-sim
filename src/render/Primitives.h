@@ -21,6 +21,22 @@ private:
     GLsizei m_indexCount = 0;
 };
 
+// Open cone surface parameterised by (angle, t): attribute 0 is vec2 (angle 0..2pi, t 0..1).
+// beam.vert.glsl turns this into geometry along an arbitrary axis.
+class ConeMesh {
+public:
+    ConeMesh();
+    ~ConeMesh();
+    ConeMesh(const ConeMesh&) = delete;
+    ConeMesh& operator=(const ConeMesh&) = delete;
+
+    void draw() const;
+
+private:
+    GLuint m_vao = 0, m_vbo = 0, m_ebo = 0;
+    GLsizei m_indexCount = 0;
+};
+
 // Per-frame streamed vec4 vertices (attribute 0), drawn as points or lines.
 class StreamBuffer4 {
 public:
