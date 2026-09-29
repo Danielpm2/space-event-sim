@@ -76,6 +76,7 @@ add_library(sim_core STATIC
     src/core/BlackHoleSim.cpp
     src/core/SupernovaSim.cpp
     src/core/MergerSim.cpp
+    src/core/MagnetarSim.cpp
 )
 target_include_directories(sim_core PUBLIC src)
 target_link_libraries(sim_core PUBLIC glm::glm)
