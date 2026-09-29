@@ -96,6 +96,7 @@ add_executable(spacesim
     src/render/BlackHoleRenderer.cpp
     src/render/SupernovaRenderer.cpp
     src/render/MergerRenderer.cpp
+    src/render/MagnetarRenderer.cpp
     src/render/Screenshot.cpp
 )
 target_include_directories(spacesim PRIVATE src)

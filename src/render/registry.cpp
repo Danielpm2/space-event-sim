@@ -1,10 +1,12 @@
 #include "render/registry.h"
 
 #include "core/BlackHoleSim.h"
+#include "core/MagnetarSim.h"
 #include "core/MergerSim.h"
 #include "core/PulsarSim.h"
 #include "core/SupernovaSim.h"
 #include "render/BlackHoleRenderer.h"
+#include "render/MagnetarRenderer.h"
 #include "render/MergerRenderer.h"
 #include "render/PulsarRenderer.h"
 #include "render/SupernovaRenderer.h"
@@ -25,6 +27,9 @@ const std::vector<SimEntry>& registry() {
         {"Neutron Star Merger",
          [] { return std::make_unique<core::MergerSim>(); },
          [] { return std::make_unique<MergerRenderer>(); }},
+        {"Magnetar",
+         [] { return std::make_unique<core::MagnetarSim>(); },
+         [] { return std::make_unique<MagnetarRenderer>(); }},
     };
     return entries;
 }
