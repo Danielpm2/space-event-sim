@@ -27,6 +27,7 @@ public:
     void set(const char* name, const glm::vec2& v) const;
     void set(const char* name, const glm::vec3& v) const;
     void set(const char* name, const glm::vec4& v) const;
+    void set(const char* name, const glm::mat3& v) const;
     void set(const char* name, const glm::mat4& v) const;
 
 private:
