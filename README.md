@@ -4,6 +4,9 @@ A small OpenGL 3.3 core / C++17 app with a menu of space-event simulations.
 
 - **Black Hole**: fragment-shader raymarched gravitational lensing, Doppler-beamed accretion disk, lensed starfield.
 - **Pulsar**: tilted magnetic axis, two lighthouse beams, particle stream, flare when a beam sweeps the viewer.
+- **Supernova**: core collapse, flash, and an expanding clumpy shock shell (volumetric raymarch); loops.
+- **Neutron Star Merger**: inspiral on a curved spacetime grid with gravitational-wave ripples, merger flash, jets and kilonova ejecta; loops.
+- **Magnetar**: twisted dipole field lines that build up stress until a starquake flare releases it.
 
 ## Build (Linux)
 
@@ -21,7 +24,8 @@ cmake --build build -j
 
 GLFW's Wayland backend is built only if `libwayland-dev`, `libxkbcommon-dev`, `wayland-protocols` and `wayland-scanner` are installed; otherwise the X11 backend is used (XWayland on Wayland sessions).
 
-Options: `./build/spacesim --sim pulsar` (or `"black hole"`) skips the menu.
+Options: `./build/spacesim --sim pulsar` (or `"black hole"`, `supernova`, `"neutron star merger"`, `magnetar`) skips the menu.
+Dev aids: `--warp <seconds>` fast-forwards the simulation and `--screenshot <file.ppm>` saves a frame and exits.
 
 ## Controls
 
