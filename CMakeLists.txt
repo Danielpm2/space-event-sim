@@ -87,6 +87,7 @@ add_executable(spacesim
     src/render/App.cpp
     src/render/Window.cpp
     src/render/Paths.cpp
+    src/render/PostProcess.cpp
     src/render/Primitives.cpp
     src/render/Shader.cpp
     src/render/ImGuiLayer.cpp

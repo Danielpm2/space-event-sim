@@ -152,8 +152,11 @@ int App::run() {
 
         if (h > 0 && w > 0) {
             if (m_sim) {
+                const bool hdr = m_post.beginScene(w, h);
                 m_sim->update(dt);
                 m_renderer->draw(*m_sim, w, h);
+                if (hdr)
+                    m_post.apply(m_fx, w, h);
             } else {
                 m_menuBg.use();
                 m_menuBg.set("uResolution", glm::vec2(w, h));

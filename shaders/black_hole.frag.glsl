@@ -1,6 +1,7 @@
 #version 330 core
 
 #include "common/camera.glsl"
+#include "common/hdr.glsl"
 #include "common/stars.glsl"
 
 in vec2 vUV;
@@ -133,8 +134,7 @@ void main() {
     }
 
     if (!captured && trans >= 0.01)
-        col += trans * starfield(normalize(vel));
+        col += trans * toLinearClamped(starfield(normalize(vel)));
 
-    col = 1.0 - exp(-col * 1.3);
-    fragColor = vec4(pow(col, vec3(0.85)), 1.0);
+    fragColor = vec4(col, 1.0);
 }

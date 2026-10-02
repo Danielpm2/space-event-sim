@@ -1,5 +1,7 @@
 #version 330 core
 
+#include "common/hdr.glsl"
+
 in vec3 vNormal;
 in vec3 vWorld;
 out vec4 fragColor;
@@ -26,5 +28,5 @@ void main() {
     col += rim * vec3(0.5, 0.8, 1.0) * 1.3;
     col += pole * vec3(1.0) * 1.6;
     col += pow(max(dot(n, uHotspot), 0.0), 18.0) * uHotspotStrength * vec3(1.0, 0.6, 0.25) * 3.0;
-    fragColor = vec4(col * (0.6 + 0.4 * uGlow), 1.0);
+    fragColor = vec4(toLinearClamped(col * (0.6 + 0.4 * uGlow)), 1.0);
 }

@@ -2,10 +2,12 @@
 
 #include "render/FullscreenTriangle.h"
 #include "render/ImGuiLayer.h"
+#include "render/PostProcess.h"
 #include "render/Shader.h"
 #include "render/SimRenderer.h"
 #include "render/Window.h"
 
+#include "core/PostFxSettings.h"
 #include "core/Simulation.h"
 
 #include <memory>
@@ -38,6 +40,8 @@ private:
     ImGuiLayer m_imgui;
     Shader m_menuBg;
     FullscreenTriangle m_triangle;
+    PostProcess m_post;
+    core::PostFxSettings m_fx;
 
     std::unique_ptr<core::Simulation> m_sim;
     std::unique_ptr<SimRenderer> m_renderer;

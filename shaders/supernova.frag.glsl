@@ -1,6 +1,7 @@
 #version 330 core
 
 #include "common/camera.glsl"
+#include "common/hdr.glsl"
 #include "common/stars.glsl"
 #include "common/noise.glsl"
 
@@ -86,7 +87,7 @@ void main() {
         }
     }
 
-    col += trans * starfield(rd) * 0.9;
+    col += trans * toLinearClamped(starfield(rd) * 0.9);
 
     // Bloom around the centre (core-bounce flash, remnant neutron star, pre-collapse glow).
     float b2 = length(cross(ro, rd));
@@ -95,6 +96,5 @@ void main() {
     col += vec3(0.55, 0.75, 1.0) * uRemnant * uFade * 0.8 / (1.0 + b2 * b2 * 25.0);
     col += vec3(1.0, 0.7, 0.4) * uStarBright * 0.03 * uFade / (1.0 + b2 * b2 * 0.4);
 
-    col = 1.0 - exp(-col * 1.2);
-    fragColor = vec4(pow(col, vec3(0.85)), 1.0);
+    fragColor = vec4(col, 1.0);
 }

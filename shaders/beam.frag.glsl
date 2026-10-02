@@ -1,5 +1,7 @@
 #version 330 core
 
+#include "common/hdr.glsl"
+
 in float vT;
 in vec3 vNormal;
 in vec3 vWorld;
@@ -16,5 +18,5 @@ void main() {
     float body = max(pow(facing, 1.5), uFlash);
     float fade = pow(1.0 - vT, 1.6) * smoothstep(0.0, 0.05, vT);
     float a = body * fade * uIntensity;
-    fragColor = vec4(uColor * a, 1.0);
+    fragColor = vec4(toLinearClamped(uColor * a), 1.0);
 }
