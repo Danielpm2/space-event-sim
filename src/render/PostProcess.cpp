@@ -133,8 +133,7 @@ void PostProcess::apply(const core::PostFxSettings& settings, int width, int hei
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 
-    if (settings.bloomEnabled)
-        runBloom(settings);
+    const bool bloom = settings.bloomEnabled && runBloom(settings);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, width, height);
@@ -142,7 +141,12 @@ void PostProcess::apply(const core::PostFxSettings& settings, int width, int hei
     m_composite.use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_scene.tex);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, bloom ? m_ping[0].tex : m_scene.tex);
+    glActiveTexture(GL_TEXTURE0);
     m_composite.set("uScene", 0);
+    m_composite.set("uBloom", 1);
+    m_composite.set("uBloomIntensity", bloom ? settings.intensity : 0.f);
     m_composite.set("uExposure", settings.exposure);
     m_triangle.draw();
 

@@ -25,7 +25,7 @@ cmake --build build -j
 GLFW's Wayland backend is built only if `libwayland-dev`, `libxkbcommon-dev`, `wayland-protocols` and `wayland-scanner` are installed; otherwise the X11 backend is used (XWayland on Wayland sessions).
 
 Options: `./build/spacesim --sim pulsar` (or `"black hole"`, `supernova`, `"neutron star merger"`, `magnetar`) skips the menu.
-Dev aids: `--warp <seconds>` fast-forwards the simulation and `--screenshot <file.ppm>` saves a frame and exits.
+Dev aids: `--warp <seconds>` fast-forwards the simulation and `--screenshot <file.ppm>` saves a frame and exits, `--no-bloom` starts with bloom off.
 
 ## Controls
 

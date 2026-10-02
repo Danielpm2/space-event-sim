@@ -66,13 +66,25 @@ void App::drawSimulationUi(int, int) {
         for (auto& p : m_sim->params())
             ImGui::SliderFloat(p.name.c_str(), p.value, p.min, p.max);
         ImGui::Separator();
+        if (ImGui::CollapsingHeader("Post-processing")) {
+            ImGui::Checkbox("Bloom (B)", &m_fx.bloomEnabled);
+            ImGui::BeginDisabled(!m_fx.bloomEnabled);
+            ImGui::SliderFloat("Threshold", &m_fx.threshold, 0.f, 5.f);
+            ImGui::SliderFloat("Intensity", &m_fx.intensity, 0.f, 2.f);
+            ImGui::SliderInt("Blur passes", &m_fx.blurPasses, 1, 12);
+            ImGui::EndDisabled();
+            ImGui::SliderFloat("Exposure", &m_fx.exposure, 0.1f, 4.f);
+            if (ImGui::Button("Reset post-processing"))
+                m_fx = core::PostFxSettings{};
+        }
+        ImGui::Separator();
         if (ImGui::Button("Reset camera"))
             m_sim->camera = m_defaultCamera;
         ImGui::SameLine();
         if (ImGui::Button("Back to menu (Esc)"))
             backToMenu();
         ImGui::Separator();
-        ImGui::TextDisabled("Drag: orbit   Scroll / W,S: zoom\nArrows: orbit   F11: fullscreen");
+        ImGui::TextDisabled("Drag: orbit   Scroll / W,S: zoom\nArrows: orbit   F11: fullscreen   B: bloom");
     }
     ImGui::End();
 }
@@ -136,6 +148,8 @@ int App::run() {
             m_window.toggleFullscreen();
 
         m_imgui.beginFrame();
+        if (keyPressedOnce(GLFW_KEY_B) && m_sim && !m_imgui.wantsKeyboard())
+            m_fx.bloomEnabled = !m_fx.bloomEnabled;
         if (m_sim)
             handleCameraInput(dt);
 

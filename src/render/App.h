@@ -20,6 +20,7 @@ class App {
 public:
     App();
     int run();
+    core::PostFxSettings& postFx() { return m_fx; }
     void launchSimulation(size_t index);
     // Dev aid: fast-forward the running simulation by `seconds`.
     void warpSimulation(double seconds);
