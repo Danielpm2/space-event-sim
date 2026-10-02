@@ -10,5 +10,5 @@ uniform vec3 uColor; // intensity folded in
 void main() {
     float r = length(vCorner);
     float g = pow(max(1.0 - r, 0.0), 2.5);
-    fragColor = vec4(toLinearClamped(uColor * g), 1.0);
+    fragColor = vec4(toLinearHdr(uColor * g, 4.0), 1.0);
 }

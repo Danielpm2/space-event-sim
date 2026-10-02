@@ -16,5 +16,5 @@ void main() {
         discard;
     float g = (1.0 - r) * (1.0 - r);
     vec3 col = mix(uTintOld, uTintNew, vLife);
-    fragColor = vec4(toLinearClamped(col * g * vLife * 0.9 * uGlow), 1.0);
+    fragColor = vec4(toLinearHdr(col * g * vLife * 0.9 * uGlow, 3.0), 1.0);
 }

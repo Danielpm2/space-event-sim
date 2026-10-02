@@ -133,6 +133,8 @@ void main() {
             break;
     }
 
+    col = hdrBoost(col, 2.5); // disk only; stars are added below
+
     if (!captured && trans >= 0.01)
         col += trans * toLinearClamped(starfield(normalize(vel)));
 

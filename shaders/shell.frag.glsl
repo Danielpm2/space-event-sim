@@ -13,5 +13,5 @@ uniform float uStrength;
 
 void main() {
     float f = 1.0 - abs(dot(normalize(vNormal), normalize(uCamPos - vWorld)));
-    fragColor = vec4(toLinearClamped(uColor * pow(f, 2.0) * uStrength), 1.0);
+    fragColor = vec4(toLinearHdr(uColor * pow(f, 2.0) * uStrength, 3.0), 1.0);
 }
