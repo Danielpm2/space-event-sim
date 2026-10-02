@@ -2,13 +2,21 @@
 
 #include "render/GlCheck.h"
 
+#include <algorithm>
 #include <cstdio>
 
 namespace render {
 
-PostProcess::PostProcess() : m_composite("fullscreen.vert.glsl", "composite.frag.glsl") {}
+PostProcess::PostProcess()
+    : m_composite("fullscreen.vert.glsl", "composite.frag.glsl"),
+      m_bright("fullscreen.vert.glsl", "bright_pass.frag.glsl"),
+      m_blur("fullscreen.vert.glsl", "blur.frag.glsl") {}
 
-PostProcess::~PostProcess() { destroyTarget(m_scene); }
+PostProcess::~PostProcess() {
+    destroyTarget(m_scene);
+    destroyTarget(m_ping[0]);
+    destroyTarget(m_ping[1]);
+}
 
 void PostProcess::destroyTarget(Target& t) {
     if (t.fbo)
@@ -69,6 +77,11 @@ bool PostProcess::beginScene(int width, int height) {
             m_failed = true;
             return false;
         }
+        const int hw = std::max(1, width / 2), hh = std::max(1, height / 2);
+        m_bloomFailed = !createTarget(m_ping[0], hw, hh, false, "bloom A") ||
+                        !createTarget(m_ping[1], hw, hh, false, "bloom B");
+        if (m_bloomFailed)
+            std::fprintf(stderr, "[PostProcess] bloom disabled\n");
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_scene.fbo);
@@ -79,16 +92,52 @@ bool PostProcess::beginScene(int width, int height) {
     return true;
 }
 
+bool PostProcess::runBloom(const core::PostFxSettings& settings) {
+    if (m_bloomFailed || m_ping[0].fbo == 0 || m_ping[1].fbo == 0)
+        return false;
+
+    const int w = m_ping[0].w, h = m_ping[0].h;
+    glViewport(0, 0, w, h);
+    glActiveTexture(GL_TEXTURE0);
+
+    m_bright.use();
+    m_bright.set("uScene", 0);
+    m_bright.set("uThreshold", settings.threshold);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_ping[0].fbo);
+    glBindTexture(GL_TEXTURE_2D, m_scene.tex);
+    m_triangle.draw();
+
+    m_blur.use();
+    m_blur.set("uImage", 0);
+    const int passes = std::clamp(settings.blurPasses, 1, 16);
+    for (int i = 0; i < passes; ++i) {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_ping[1].fbo);
+        glBindTexture(GL_TEXTURE_2D, m_ping[0].tex);
+        m_blur.set("uDirection", glm::vec2(1.f / w, 0.f));
+        m_triangle.draw();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, m_ping[0].fbo);
+        glBindTexture(GL_TEXTURE_2D, m_ping[1].tex);
+        m_blur.set("uDirection", glm::vec2(0.f, 1.f / h));
+        m_triangle.draw();
+    }
+    return true;
+}
+
 void PostProcess::apply(const core::PostFxSettings& settings, int width, int height) {
     if (!m_active)
         return;
     m_active = false;
 
     checkGl("scene pass");
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, width, height);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
+
+    if (settings.bloomEnabled)
+        runBloom(settings);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, width, height);
 
     m_composite.use();
     glActiveTexture(GL_TEXTURE0);

@@ -31,11 +31,17 @@ private:
 
     bool createTarget(Target& t, int w, int h, bool withDepth, const char* name);
     void destroyTarget(Target& t);
+    // Bright pass + blur into m_ping[0]; returns false if unavailable.
+    bool runBloom(const core::PostFxSettings& settings);
 
     Shader m_composite;
+    Shader m_bright;
+    Shader m_blur;
     FullscreenTriangle m_triangle;
     Target m_scene;
+    Target m_ping[2]; // half resolution
     bool m_failed = false;
+    bool m_bloomFailed = false;
     bool m_active = false;
 };
 
