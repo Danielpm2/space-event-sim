@@ -17,6 +17,7 @@ public:
     bool shouldClose() const;
     void requestClose();
     void pollEvents();
+    void waitEvents(double timeoutSeconds);
     void swapBuffers();
 
     void toggleFullscreen();

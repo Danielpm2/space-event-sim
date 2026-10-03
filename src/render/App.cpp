@@ -139,6 +139,15 @@ int App::run() {
     while (!m_window.shouldClose()) {
         m_window.pollEvents();
 
+        // A minimized window reports a 0x0 framebuffer; idle instead of spinning.
+        int w, h;
+        m_window.framebufferSize(w, h);
+        if (w <= 0 || h <= 0) {
+            m_window.waitEvents(0.1);
+            last = m_window.time();
+            continue;
+        }
+
         const double now = m_window.time();
         const double dt = std::min(now - last, 0.1);
         last = now;
@@ -153,8 +162,6 @@ int App::run() {
         if (m_sim)
             handleCameraInput(dt);
 
-        int w, h;
-        m_window.framebufferSize(w, h);
         glViewport(0, 0, w, h);
         glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

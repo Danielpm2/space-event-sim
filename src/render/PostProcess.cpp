@@ -68,13 +68,19 @@ bool PostProcess::beginScene(int width, int height) {
     m_active = false;
     if (width <= 0 || height <= 0)
         return false;
-    if (m_failed)
+    // After a failure, try again only when the size changes.
+    if (m_failed && width == m_failedW && height == m_failedH)
         return false;
+    m_failed = false;
 
     if (m_scene.fbo == 0 || m_scene.w != width || m_scene.h != height) {
         if (!createTarget(m_scene, width, height, true, "scene")) {
-            std::fprintf(stderr, "[PostProcess] disabled; rendering directly to the window\n");
+            std::fprintf(stderr, "[PostProcess] disabled at %dx%d; rendering directly to the window\n", width, height);
             m_failed = true;
+            m_failedW = width;
+            m_failedH = height;
+            destroyTarget(m_ping[0]);
+            destroyTarget(m_ping[1]);
             return false;
         }
         const int hw = std::max(1, width / 2), hh = std::max(1, height / 2);

@@ -42,6 +42,7 @@ Window::~Window() {
 bool Window::shouldClose() const { return glfwWindowShouldClose(m_window); }
 void Window::requestClose() { glfwSetWindowShouldClose(m_window, GLFW_TRUE); }
 void Window::pollEvents() { glfwPollEvents(); }
+void Window::waitEvents(double timeoutSeconds) { glfwWaitEventsTimeout(timeoutSeconds); }
 void Window::swapBuffers() { glfwSwapBuffers(m_window); }
 double Window::time() const { return glfwGetTime(); }
 

@@ -41,6 +41,7 @@ private:
     Target m_scene;
     Target m_ping[2]; // half resolution
     bool m_failed = false;
+    int m_failedW = 0, m_failedH = 0;
     bool m_bloomFailed = false;
     bool m_active = false;
 };
