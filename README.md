@@ -36,6 +36,10 @@ Dev aids: `--warp <seconds>` fast-forwards the simulation and `--screenshot <fil
 | Sliders (top-left panel) | Change simulation parameters |
 | Esc | Back to menu (quit from the menu) |
 | F11 | Toggle fullscreen |
+| Space | Pause / resume |
+| H | Hide / show the interface |
+| F1 | Controls help overlay |
+| 1-5 (menu) | Launch a simulation |
 | B | Toggle bloom (settings under "Post-processing" in the panel) |
 
 ## Layout

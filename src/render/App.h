@@ -33,7 +33,9 @@ public:
 private:
     void backToMenu();
     void handleCameraInput(double dt);
-    void drawSimulationUi(int width, int height);
+    void drawSimulationUi();
+    void drawHelp();
+    void drawOverlays();
     void drawFps();
     bool keyPressedOnce(int key);
 
@@ -52,6 +54,11 @@ private:
     int m_captureFrames = 0;
     bool m_dragging = false;
     bool m_wasMouseDown = false;
+    size_t m_activeIndex = 0;
+    bool m_paused = false;
+    bool m_uiVisible = true;
+    bool m_showHelp = false;
+    float m_fade = 0.f; // 1 = fully black, eases to 0 after a screen change
     bool m_keyDown[512] = {};
 };
 
