@@ -17,6 +17,7 @@ namespace render {
 // renderers are paired; add a new simulation by appending to registry().
 struct SimEntry {
     std::string name;
+    std::string description;
     std::function<std::unique_ptr<core::Simulation>()> makeSimulation;
     std::function<std::unique_ptr<SimRenderer>()> makeRenderer;
 };

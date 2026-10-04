@@ -132,9 +132,9 @@ void App::handleCameraInput(double dt) {
 
 int App::run() {
     double last = m_window.time();
-    std::vector<std::string> names;
+    std::vector<MenuEntry> names;
     for (const auto& e : registry())
-        names.push_back(e.name);
+        names.push_back({e.name, e.description});
 
     while (!m_window.shouldClose()) {
         m_window.pollEvents();
