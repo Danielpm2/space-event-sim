@@ -2,6 +2,7 @@
 
 #include "core/MagnetarSim.h"
 #include "render/CameraUniforms.h"
+#include "render/SkyTexture.h"
 
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -32,6 +33,7 @@ void MagnetarRenderer::draw(const core::Simulation& base, int width, int height)
     glDisable(GL_BLEND);
     m_sky.use();
     setCameraUniforms(m_sky, cam, width, height);
+    bindSky(m_sky, height, cam.fovY);
     m_fullscreen.draw();
 
     // Star

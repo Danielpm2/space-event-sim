@@ -48,6 +48,7 @@ Dev aids: `--warp <seconds>` fast-forwards the simulation and `--screenshot <fil
 src/core/     simulation state, physics, camera math (GLM only; no OpenGL/ImGui)
 src/render/   window, shader loader, renderers, ImGui UI, registry
 shaders/      .glsl files loaded at runtime (copied next to the binary on build)
+assets/       images loaded at runtime via stb_image (Milky Way sky map; see assets/CREDITS.txt)
 external/     vendored GLAD (OpenGL 4.6 core loader, used with a 3.3 context)
 ```
 

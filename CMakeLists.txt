@@ -47,6 +47,13 @@ FetchContent_Declare(glm
 
 FetchContent_MakeAvailable(glfw glm)
 
+# --- stb_image (header only, no CMake of its own) ----------------------------
+FetchContent_Declare(stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG        2c980bb59875b0d32144a71867fbdebb2f77cd20
+    GIT_SHALLOW    FALSE)
+FetchContent_MakeAvailable(stb)
+
 # --- Dear ImGui (no CMake of its own; build the needed sources) --------------
 FetchContent_Declare(imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -99,19 +106,30 @@ add_executable(spacesim
     src/render/MergerRenderer.cpp
     src/render/MagnetarRenderer.cpp
     src/render/Screenshot.cpp
+    src/render/SkyTexture.cpp
+    src/render/StbImage.cpp
 )
-target_include_directories(spacesim PRIVATE src)
+target_include_directories(spacesim PRIVATE src ${stb_SOURCE_DIR})
 target_link_libraries(spacesim PRIVATE sim_core glfw glad glm::glm imgui)
-target_compile_definitions(spacesim PRIVATE SHADER_SOURCE_DIR="${CMAKE_SOURCE_DIR}/shaders")
+target_compile_definitions(spacesim PRIVATE
+    SHADER_SOURCE_DIR="${CMAKE_SOURCE_DIR}/shaders"
+    ASSET_SOURCE_DIR="${CMAKE_SOURCE_DIR}/assets")
 
 # Shaders are loaded at runtime from <exe dir>/shaders. The copy runs before every
 # spacesim build, so IDEs that build only that target still get fresh shaders.
-set_target_properties(spacesim PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# The generator expression stops VS/Xcode from adding a per-config subfolder.
+set_target_properties(spacesim PROPERTIES RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_BINARY_DIR}>")
 add_custom_target(copy_shaders
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders)
 add_dependencies(spacesim copy_shaders)
+
+# Images/models are loaded at runtime from <exe dir>/assets.
+add_custom_target(copy_assets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets)
+add_dependencies(spacesim copy_assets)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(spacesim PRIVATE -Wall -Wextra)

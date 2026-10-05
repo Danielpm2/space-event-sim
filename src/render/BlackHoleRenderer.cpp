@@ -2,6 +2,7 @@
 
 #include "core/BlackHoleSim.h"
 #include "render/CameraUniforms.h"
+#include "render/SkyTexture.h"
 
 #include <glad/glad.h>
 
@@ -19,6 +20,7 @@ void BlackHoleRenderer::draw(const core::Simulation& base, int width, int height
 
     m_shader.use();
     setCameraUniforms(m_shader, sim.camera, width, height);
+    bindSky(m_shader, height, sim.camera.fovY);
     m_shader.set("uMass", sim.mass);
     m_shader.set("uRs", sim.schwarzschildRadius());
     m_shader.set("uHorizon", sim.horizonRadius());

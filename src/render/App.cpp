@@ -2,6 +2,7 @@
 
 #include "render/MainMenu.h"
 #include "render/Screenshot.h"
+#include "render/SkyTexture.h"
 #include "render/registry.h"
 
 #include <glad/glad.h>
@@ -287,6 +288,7 @@ int App::run() {
                 m_menuBg.use();
                 m_menuBg.set("uResolution", glm::vec2(w, h));
                 m_menuBg.set("uTime", static_cast<float>(now));
+                bindSky(m_menuBg, h, 60.f);
                 m_triangle.draw();
             }
         }

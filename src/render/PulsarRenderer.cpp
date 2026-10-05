@@ -2,6 +2,7 @@
 
 #include "core/PulsarSim.h"
 #include "render/CameraUniforms.h"
+#include "render/SkyTexture.h"
 
 #include <glm/gtc/constants.hpp>
 
@@ -31,6 +32,7 @@ void PulsarRenderer::draw(const core::Simulation& base, int width, int height) {
     glDisable(GL_BLEND);
     m_sky.use();
     setCameraUniforms(m_sky, cam, width, height);
+    bindSky(m_sky, height, cam.fovY);
     m_fullscreen.draw();
 
     // Star

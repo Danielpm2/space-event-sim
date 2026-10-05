@@ -2,6 +2,7 @@
 
 #include "core/SupernovaSim.h"
 #include "render/CameraUniforms.h"
+#include "render/SkyTexture.h"
 
 #include <glad/glad.h>
 
@@ -17,6 +18,7 @@ void SupernovaRenderer::draw(const core::Simulation& base, int width, int height
 
     m_shader.use();
     setCameraUniforms(m_shader, sim.camera, width, height);
+    bindSky(m_shader, height, sim.camera.fovY);
     m_shader.set("uTime", sim.time());
     m_shader.set("uStarRadius", sim.progenitorRadius());
     m_shader.set("uStarBright", sim.starBrightness());

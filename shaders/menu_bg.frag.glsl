@@ -1,34 +1,32 @@
 #version 330 core
 
+#include "common/hdr.glsl"
+#include "common/stars.glsl"
+
 in vec2 vUV;
 out vec4 fragColor;
 
 uniform vec2 uResolution;
 uniform float uTime;
 
-float hash(vec2 p) {
-    p = fract(p * vec2(123.34, 456.21));
-    p += dot(p, p + 45.32);
-    return fract(p.x * p.y);
+const float TAN_HALF_FOV = 0.58;
+
+// Same tone mapping as composite.frag.glsl; the menu skips the HDR pipeline.
+vec3 aces(vec3 x) {
+    return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
 }
 
 void main() {
-    vec2 px = vUV * uResolution;
-    vec3 col = mix(vec3(0.01, 0.01, 0.03), vec3(0.03, 0.02, 0.07), vUV.y);
+    vec2 ndc = vUV * 2.0 - 1.0;
+    vec3 ray = normalize(vec3(ndc.x * uResolution.x / uResolution.y * TAN_HALF_FOV, ndc.y * TAN_HALF_FOV, -1.0));
 
-    // Two grid layers of slowly twinkling stars.
-    for (int i = 0; i < 2; ++i) {
-        float cell = i == 0 ? 60.0 : 110.0;
-        vec2 g = px / cell + float(i) * 17.0;
-        vec2 id = floor(g);
-        vec2 f = fract(g) - 0.5;
-        float h = hash(id);
-        if (h > 0.82) {
-            vec2 off = vec2(hash(id + 3.1), hash(id + 7.7)) - 0.5;
-            float d = length(f - off * 0.6);
-            float tw = 0.6 + 0.4 * sin(uTime * (1.0 + h * 3.0) + h * 40.0);
-            col += vec3(0.8, 0.85, 1.0) * smoothstep(0.08, 0.0, d) * tw;
-        }
-    }
-    fragColor = vec4(col, 1.0);
+    // Slow drift across the sky.
+    float yaw = uTime * 0.025, pitch = 0.35 + 0.08 * sin(uTime * 0.05);
+    float cy = cos(yaw), sy = sin(yaw), cp = cos(pitch), sp = sin(pitch);
+    ray = vec3(ray.x, ray.y * cp - ray.z * sp, ray.y * sp + ray.z * cp);
+    ray = vec3(ray.x * cy + ray.z * sy, ray.y, -ray.x * sy + ray.z * cy);
+
+    vec3 c = aces(toLinearClamped(starfield(ray)) * 0.9);
+    c *= 1.0 - 0.45 * dot(ndc, ndc) * 0.5; // vignette
+    fragColor = vec4(pow(c, vec3(1.0 / 2.2)), 1.0);
 }
