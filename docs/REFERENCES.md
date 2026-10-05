@@ -44,7 +44,7 @@ Code: [src/core/SupernovaSim.cpp](../src/core/SupernovaSim.cpp), [shaders/supern
 | What the code does | Math | Source |
 | --- | --- | --- |
 | Core collapse followed by an explosion | Overview of the collapse, bounce and neutrino-driven explosion mechanism | Janka, Ann. Rev. Nucl. Part. Sci. 62, 407 (2012), [arXiv:1206.2503](https://arxiv.org/abs/1206.2503) |
-| Expanding shock radius `R ∝ √E · t^0.68` | Self-similar blast wave. The exact Sedov-Taylor solution is $R = \xi\left(E t^2/\rho\right)^{1/5}$, i.e. $R \propto t^{0.4}$. The code uses a larger exponent as a compromise between the early free-expansion phase ($R \propto t$) and the Sedov phase. | Taylor, Proc. R. Soc. A 201, 159 (1950); Sedov, *Similarity and Dimensional Methods in Mechanics* (1959); Truelove & McKee, ApJS 120, 299 (1999) |
+| Expanding shock radius `R ∝ √E · t^0.68` | Self-similar blast wave. The exact Sedov-Taylor solution is $R = \xi\left(E t^2/\rho\right)^{1/5}$, i.e. $R \propto t^{0.4}$. The code uses a larger exponent as a compromise between the early free-expansion phase ($R \propto t$) and the Sedov phase. The energy dependence is also stylized: Sedov gives $R \propto E^{1/5}$, the code uses $\sqrt{E}$. | Taylor, Proc. R. Soc. A 201, 159 (1950); Sedov, *Similarity and Dimensional Methods in Mechanics* (1959); Truelove & McKee, ApJS 120, 299 (1999) |
 | Explosion energy scale | About $10^{51}$ erg of kinetic energy (the `Explosion energy` slider is relative to this) | Janka (2012) |
 
 Stylized: shell thickness, clumpiness and brightness decay are artistic; there is no hydrodynamics.

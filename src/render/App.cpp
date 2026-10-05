@@ -238,7 +238,7 @@ int App::run() {
         }
 
         const double now = m_window.time();
-        const double dt = std::min(now - last, 0.1);
+        const double dt = m_recordPrefix.empty() ? std::min(now - last, 0.1) : 1.0 / 30.0;
         last = now;
 
         const bool esc = keyPressedOnce(GLFW_KEY_ESCAPE);
@@ -264,6 +264,8 @@ int App::run() {
         m_fade = std::max(0.f, m_fade - static_cast<float>(dt) / 0.35f);
         if (m_sim)
             handleCameraInput(dt);
+        if (m_sim && m_autoOrbit != 0.f)
+            m_sim->camera.yaw += m_autoOrbit * static_cast<float>(dt);
 
         glViewport(0, 0, w, h);
         glClearColor(0.f, 0.f, 0.f, 1.f);
@@ -318,6 +320,15 @@ int App::run() {
             if (!saveScreenshotPPM(m_capturePath, w, h))
                 std::fprintf(stderr, "Cannot write %s\n", m_capturePath.c_str());
             m_window.requestClose();
+        }
+
+        if (!m_recordPrefix.empty()) {
+            char name[1024];
+            std::snprintf(name, sizeof(name), "%s%04d.ppm", m_recordPrefix.c_str(), m_recordIndex++);
+            if (!saveScreenshotPPM(name, w, h))
+                std::fprintf(stderr, "Cannot write %s\n", name);
+            if (m_recordIndex >= m_recordFrames)
+                m_window.requestClose();
         }
 
         m_window.swapBuffers();

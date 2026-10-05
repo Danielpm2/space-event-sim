@@ -26,6 +26,13 @@ public:
     void warpSimulation(double seconds);
     // Dev aid: skip all ImGui drawing so screenshots show only the scene.
     void hideUi() { m_noUi = true; }
+    // Dev aid: write `frames` PPMs named <prefix>NNNN.ppm at a fixed 30 fps timestep, then exit.
+    void recordAndExit(std::string prefix, int frames) {
+        m_recordPrefix = std::move(prefix);
+        m_recordFrames = frames;
+    }
+    // Dev aid: turn the camera around the target at `radPerSec`.
+    void setAutoOrbit(float radPerSec) { m_autoOrbit = radPerSec; }
     // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
     void captureAndExit(std::string path, int frames) {
         m_capturePath = std::move(path);
@@ -54,6 +61,10 @@ private:
     std::string m_error;
     std::string m_capturePath;
     int m_captureFrames = 0;
+    std::string m_recordPrefix;
+    int m_recordFrames = 0;
+    int m_recordIndex = 0;
+    float m_autoOrbit = 0.f;
     bool m_dragging = false;
     bool m_wasMouseDown = false;
     size_t m_activeIndex = 0;

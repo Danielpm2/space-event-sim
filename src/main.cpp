@@ -19,6 +19,7 @@ std::string lower(std::string s) {
 } // namespace
 
 // Usage: spacesim [--sim <name>] [--warp <seconds>] [--screenshot <file.ppm>] [--no-bloom] [--no-ui]
+//                 [--record <prefix> <frames>] [--orbit <rad/s>]
 int main(int argc, char** argv) {
     try {
         render::App app;
@@ -30,6 +31,10 @@ int main(int argc, char** argv) {
                 app.hideUi();
         }
         for (int i = 1; i + 1 < argc; ++i) {
+            if (std::strcmp(argv[i], "--record") == 0 && i + 2 < argc)
+                app.recordAndExit(argv[i + 1], std::atoi(argv[i + 2]));
+            if (std::strcmp(argv[i], "--orbit") == 0)
+                app.setAutoOrbit(static_cast<float>(std::atof(argv[i + 1])));
             if (std::strcmp(argv[i], "--screenshot") == 0)
                 app.captureAndExit(argv[i + 1], 90);
             if (std::strcmp(argv[i], "--warp") == 0)
