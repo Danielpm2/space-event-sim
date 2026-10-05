@@ -293,23 +293,25 @@ int App::run() {
             }
         }
 
-        if (m_sim) {
-            drawSimulationUi();
-            if (m_uiVisible)
+        if (!m_noUi) {
+            if (m_sim) {
+                drawSimulationUi();
+                if (m_uiVisible)
+                    drawFps();
+            } else {
+                const MenuResult r = drawMainMenu(names, m_error);
+                if (r.quit) {
+                    m_window.requestClose();
+                } else if (r.selected >= 0) {
+                    launchSimulation(static_cast<size_t>(r.selected));
+                    if (m_sim)
+                        m_fade = 1.f;
+                }
                 drawFps();
-        } else {
-            const MenuResult r = drawMainMenu(names, m_error);
-            if (r.quit) {
-                m_window.requestClose();
-            } else if (r.selected >= 0) {
-                launchSimulation(static_cast<size_t>(r.selected));
-                if (m_sim)
-                    m_fade = 1.f;
             }
-            drawFps();
+            drawHelp();
+            drawOverlays();
         }
-        drawHelp();
-        drawOverlays();
         m_imgui.endFrame();
 
         if (!m_capturePath.empty() && --m_captureFrames <= 0) {

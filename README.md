@@ -1,12 +1,37 @@
 # Space Event Simulator
 
-A small OpenGL 3.3 core / C++17 app with a menu of space-event simulations.
+Watch the universe's most violent events happen in real time. A small OpenGL 3.3 core / C++17 app with five interactive simulations: orbit the camera, tweak the physics with sliders, and watch what changes.
 
-- **Black Hole**: fragment-shader raymarched gravitational lensing, Doppler-beamed accretion disk, lensed starfield.
-- **Pulsar**: tilted magnetic axis, two lighthouse beams, particle stream, flare when a beam sweeps the viewer.
-- **Supernova**: core collapse, flash, and an expanding clumpy shock shell (volumetric raymarch); loops.
-- **Neutron Star Merger**: inspiral on a curved spacetime grid with gravitational-wave ripples, merger flash, jets and kilonova ejecta; loops.
-- **Magnetar**: twisted dipole field lines that build up stress until a starquake flare releases it.
+![Black hole with a lensed Milky Way behind it](docs/images/black_hole.jpg)
+
+## The simulations
+
+### Black Hole
+A fragment-shader raymarcher bends light rays through a Schwarzschild field, so the glowing accretion disk appears wrapped over and under the hole. The approaching side of the disk is Doppler-beamed brighter, and the real Milky Way behind it is lensed too.
+
+### Pulsar
+A neutron star spins with its magnetic axis tilted away from the rotation axis. Two radiation beams sweep around like a lighthouse, and the whole screen flares when one points at you.
+
+![Pulsar with two sweeping beams](docs/images/pulsar.jpg)
+
+### Supernova
+A massive star swells, then collapses. A blinding flash at core bounce launches a clumpy, volumetric shock shell that expands and fades before the cycle loops.
+
+![Supernova shock shell](docs/images/supernova.jpg)
+
+### Neutron Star Merger
+Two neutron stars spiral together on a curved spacetime grid that carries gravitational-wave ripples. Then comes the merger flash, relativistic jets and a kilonova cloud.
+
+| Inspiral | Aftermath |
+| --- | --- |
+| ![Two neutron stars in the inspiral phase](docs/images/merger_inspiral.jpg) | ![Kilonova after the merger](docs/images/merger_kilonova.jpg) |
+
+### Magnetar
+Twisted dipole field lines build up stress until a starquake releases it as a giant flare.
+
+![Magnetar field lines](docs/images/magnetar.jpg)
+
+The math behind each event is listed with sources in [docs/REFERENCES.md](docs/REFERENCES.md).
 
 ## Build (Linux)
 
@@ -25,7 +50,7 @@ cmake --build build -j
 GLFW's Wayland backend is built only if `libwayland-dev`, `libxkbcommon-dev`, `wayland-protocols` and `wayland-scanner` are installed; otherwise the X11 backend is used (XWayland on Wayland sessions).
 
 Options: `./build/spacesim --sim pulsar` (or `"black hole"`, `supernova`, `"neutron star merger"`, `magnetar`) skips the menu.
-Dev aids: `--warp <seconds>` fast-forwards the simulation and `--screenshot <file.ppm>` saves a frame and exits.
+Dev aids: `--warp <seconds>` fast-forwards the simulation, `--screenshot <file.ppm>` saves a frame and exits, and `--no-ui` hides all interface elements (used for the images in `docs/images/`).
 
 ## Controls
 

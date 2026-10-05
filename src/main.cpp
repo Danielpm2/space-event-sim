@@ -18,14 +18,17 @@ std::string lower(std::string s) {
 
 } // namespace
 
-// Usage: spacesim [--sim <name>] [--warp <seconds>] [--screenshot <file.ppm>] [--no-bloom]
+// Usage: spacesim [--sim <name>] [--warp <seconds>] [--screenshot <file.ppm>] [--no-bloom] [--no-ui]
 int main(int argc, char** argv) {
     try {
         render::App app;
         double warp = 0.0;
-        for (int i = 1; i < argc; ++i)
+        for (int i = 1; i < argc; ++i) {
             if (std::strcmp(argv[i], "--no-bloom") == 0)
                 app.postFx().bloomEnabled = false;
+            if (std::strcmp(argv[i], "--no-ui") == 0)
+                app.hideUi();
+        }
         for (int i = 1; i + 1 < argc; ++i) {
             if (std::strcmp(argv[i], "--screenshot") == 0)
                 app.captureAndExit(argv[i + 1], 90);

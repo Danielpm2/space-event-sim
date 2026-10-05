@@ -24,6 +24,8 @@ public:
     void launchSimulation(size_t index);
     // Dev aid: fast-forward the running simulation by `seconds`.
     void warpSimulation(double seconds);
+    // Dev aid: skip all ImGui drawing so screenshots show only the scene.
+    void hideUi() { m_noUi = true; }
     // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
     void captureAndExit(std::string path, int frames) {
         m_capturePath = std::move(path);
@@ -57,6 +59,7 @@ private:
     size_t m_activeIndex = 0;
     bool m_paused = false;
     bool m_uiVisible = true;
+    bool m_noUi = false;
     bool m_showHelp = false;
     float m_fade = 0.f; // 1 = fully black, eases to 0 after a screen change
     bool m_keyDown[512] = {};
