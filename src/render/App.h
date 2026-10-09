@@ -3,6 +3,7 @@
 #include "render/ApproachFx.h"
 #include "render/AudioDevice.h"
 #include "render/CockpitRenderer.h"
+#include "render/ShipModel.h"
 #include "render/FullscreenTriangle.h"
 #include "render/ImGuiLayer.h"
 #include "render/PostProcess.h"
@@ -42,6 +43,13 @@ public:
     void setApproachAim(float x, float y) { m_approach.setAim({x, y}); }
     // Dev aid: never open an audio device.
     void disableAudio() { m_audioDisabled = true; }
+    // Dev aid: draw the ship model from a free camera in the file's coordinates (yaw 0 looks down -Z).
+    void setShipPreview(glm::vec3 eye, float yawDeg, float pitchDeg) {
+        m_previewOn = true;
+        m_previewEye = eye;
+        m_previewYaw = yawDeg;
+        m_previewPitch = pitchDeg;
+    }
     // Dev aid: turn the camera around the target at `radPerSec`.
     void setAutoOrbit(float radPerSec) { m_autoOrbit = radPerSec; }
     // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
@@ -73,6 +81,10 @@ private:
     PostProcess m_post;
     ApproachFx m_approachFx;
     CockpitRenderer m_cockpit;
+    ShipModel m_ship;
+    bool m_previewOn = false;
+    glm::vec3 m_previewEye{0.f};
+    float m_previewYaw = 0.f, m_previewPitch = 0.f;
     bool m_cockpitOn = true;
     core::ApproachController m_approach;
     core::ShipAudio m_shipAudio; // declared before m_audio: the device must stop first

@@ -62,6 +62,13 @@ FetchContent_Declare(miniaudio
 FetchContent_MakeAvailable(miniaudio)
 find_package(Threads REQUIRED)
 
+# --- cgltf (single header glTF loader) ----------------------------------------
+FetchContent_Declare(cgltf
+    GIT_REPOSITORY https://github.com/jkuhlmann/cgltf.git
+    GIT_TAG        v1.15
+    GIT_SHALLOW    TRUE)
+FetchContent_MakeAvailable(cgltf)
+
 # --- Dear ImGui (no CMake of its own; build the needed sources) --------------
 FetchContent_Declare(imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -108,6 +115,7 @@ add_executable(spacesim
     src/render/ApproachFx.cpp
     src/render/AudioDevice.cpp
     src/render/CockpitRenderer.cpp
+    src/render/ShipModel.cpp
     src/render/Primitives.cpp
     src/render/Shader.cpp
     src/render/ImGuiLayer.cpp
@@ -122,7 +130,7 @@ add_executable(spacesim
     src/render/SkyTexture.cpp
     src/render/StbImage.cpp
 )
-target_include_directories(spacesim PRIVATE src ${stb_SOURCE_DIR} ${miniaudio_SOURCE_DIR})
+target_include_directories(spacesim PRIVATE src ${stb_SOURCE_DIR} ${miniaudio_SOURCE_DIR} ${cgltf_SOURCE_DIR})
 target_link_libraries(spacesim PRIVATE sim_core glfw glad glm::glm imgui Threads::Threads ${CMAKE_DL_LIBS})
 target_compile_definitions(spacesim PRIVATE
     SHADER_SOURCE_DIR="${CMAKE_SOURCE_DIR}/shaders"

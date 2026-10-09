@@ -2,12 +2,15 @@
 
 #include "core/Easing.h"
 #include "render/MainMenu.h"
+#include "render/Paths.h"
 #include "render/Screenshot.h"
 #include "render/SkyTexture.h"
 #include "render/registry.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
 #include <algorithm>
@@ -21,6 +24,10 @@
 namespace render {
 
 namespace {
+
+// Pilot's eye in the ship model's own coordinates; the model's nose points along +Z.
+const glm::vec3 kShipEye(0.f, 0.9f, 0.f);
+constexpr float kShipPitchDown = 0.21f; // radians
 
 std::string formatDistance(double km) {
     constexpr double kAu = 1.495978707e8, kLightSecond = 299792.458;
@@ -555,21 +562,71 @@ int App::run() {
                 if (!m_paused)
                     m_sim->update(m_approach.active() ? dt * m_sim->approachClockScale() : dt);
                 m_renderer->draw(*m_sim, w, h);
+                if (m_previewOn) {
+                    m_ship.startLoading(assetDir() / "Spaceship_interior.glb");
+                    if (m_ship.waitUntilReady()) {
+                        const float yaw = glm::radians(m_previewYaw), pitch = glm::radians(m_previewPitch);
+                        const glm::vec3 fwd(std::sin(yaw) * std::cos(pitch), std::sin(pitch), -std::cos(yaw) * std::cos(pitch));
+                        const glm::mat4 view = glm::lookAt(m_previewEye, m_previewEye + fwd, glm::vec3(0.f, 1.f, 0.f));
+                        const glm::mat3 rot(view);
+                        ShipLighting light;
+                        light.eventDir = glm::normalize(rot * glm::vec3(0.3f, 0.6f, 0.7f));
+                        light.eventColor = glm::vec3(4.f, 3.f, 2.4f);
+                        light.cabinDir = rot * glm::vec3(0.f, 1.f, 0.f);
+                        light.cabinColor = glm::vec3(0.8f, 0.9f, 1.1f) * 0.8f;
+                        light.ambient = glm::vec3(0.2f, 0.22f, 0.28f);
+                        m_ship.draw(glm::perspective(glm::radians(70.f), static_cast<float>(w) / h, 0.02f, 50.f), view, light);
+                    }
+                }
                 if (m_approach.active()) {
                     const float intensity = std::min(1.f, m_approach.speed() / 0.4f) * 0.9f;
                     m_approachFx.draw(m_sim->camera, m_approach.velocity(), static_cast<float>(w) / h, intensity);
                     if (m_cockpitOn) {
-                        const glm::vec3 toEvent = glm::vec3(m_sim->camera.view() * glm::vec4(0.f, 0.f, 0.f, 1.f));
+                        const core::OrbitCamera& cam = m_sim->camera;
+                        const float aspect = static_cast<float>(w) / h;
+                        const glm::vec3 toEvent = glm::vec3(cam.view() * glm::vec4(0.f, 0.f, 0.f, 1.f));
+                        const glm::vec3 eventDir =
+                            glm::length(toEvent) > 1e-4f ? glm::normalize(toEvent) : glm::vec3(0.f, 0.f, -1.f);
                         const float prox = m_approach.proximity();
-                        CockpitState cs;
-                        cs.eventDir = glm::length(toEvent) > 1e-4f ? glm::normalize(toEvent) : glm::vec3(0.f, 0.f, -1.f);
-                        cs.glow = m_sim->approachGlow() * (0.15f + 0.9f * prox * std::sqrt(prox));
-                        cs.vibration = m_approach.vibration();
-                        cs.speed = flightSpeed01();
-                        cs.shake = m_approach.shake();
-                        cs.proximity = prox;
-                        cs.time = m_approach.elapsed();
-                        m_cockpit.draw(cs, static_cast<float>(w) / h);
+                        const glm::vec3 glow = m_sim->approachGlow() * (0.15f + 0.9f * prox * std::sqrt(prox));
+
+                        // The ship model, once loaded; until then (or without the file) the built-in cockpit.
+                        m_ship.startLoading(assetDir() / "Spaceship_interior.glb");
+                        const bool shipReady = m_capturePath.empty() && m_recordPrefix.empty() ? m_ship.poll()
+                                                                                                : m_ship.waitUntilReady();
+                        if (shipReady) {
+                            // The ship keeps its heading along -Z; only the head turns, so the model is
+                            // placed in the world frame and seen through the camera's rotation.
+                            const glm::mat4 viewRot(glm::mat3(cam.view()));
+                            const glm::vec3 vib = m_approach.vibration();
+                            glm::mat4 shipFrame = glm::rotate(glm::mat4(1.f), vib.x, glm::vec3(1.f, 0.f, 0.f));
+                            shipFrame = glm::rotate(shipFrame, vib.y, glm::vec3(0.f, 1.f, 0.f));
+                            shipFrame = glm::rotate(shipFrame, vib.z, glm::vec3(0.f, 0.f, 1.f));
+                            // The canopy sits above the dashboard, so the model is pitched nose-down
+                            // relative to the flight path to put what lies ahead behind the glass.
+                            const glm::mat4 modelToShip = glm::rotate(glm::mat4(1.f), -kShipPitchDown, glm::vec3(1.f, 0.f, 0.f)) *
+                                                          glm::rotate(glm::mat4(1.f), glm::pi<float>(), glm::vec3(0.f, 1.f, 0.f)) *
+                                                          glm::translate(glm::mat4(1.f), -kShipEye);
+                            ShipLighting light;
+                            light.eventDir = eventDir;
+                            light.eventColor = glow * 4.f;
+                            light.cabinDir = glm::mat3(viewRot) * glm::vec3(0.f, 1.f, 0.f);
+                            light.cabinColor = glm::vec3(0.8f, 0.9f, 1.1f) * 0.5f;
+                            light.ambient = glm::vec3(0.12f, 0.13f, 0.17f) + glow * 0.15f;
+                            light.time = m_approach.elapsed();
+                            m_ship.draw(glm::perspective(glm::radians(cam.fovY), aspect, 0.02f, 50.f),
+                                        viewRot * shipFrame * modelToShip, light);
+                        } else {
+                            CockpitState cs;
+                            cs.eventDir = eventDir;
+                            cs.glow = glow;
+                            cs.vibration = m_approach.vibration();
+                            cs.speed = flightSpeed01();
+                            cs.shake = m_approach.shake();
+                            cs.proximity = prox;
+                            cs.time = m_approach.elapsed();
+                            m_cockpit.draw(cs, aspect);
+                        }
                     }
                 }
                 if (hdr) {

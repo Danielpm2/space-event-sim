@@ -46,6 +46,9 @@ int main(int argc, char** argv) {
                 approach = std::atof(argv[i + 1]);
             if (std::strcmp(argv[i], "--aim") == 0 && i + 2 < argc)
                 app.setApproachAim(static_cast<float>(std::atof(argv[i + 1])), static_cast<float>(std::atof(argv[i + 2])));
+            if (std::strcmp(argv[i], "--ship-preview") == 0 && i + 5 < argc)
+                app.setShipPreview(glm::vec3(std::atof(argv[i + 1]), std::atof(argv[i + 2]), std::atof(argv[i + 3])),
+                                   static_cast<float>(std::atof(argv[i + 4])), static_cast<float>(std::atof(argv[i + 5])));
             if (std::strcmp(argv[i], "--sim") != 0)
                 continue;
             const auto& entries = render::registry();
