@@ -35,6 +35,8 @@ public:
     }
     // Dev aid: begin the cinematic approach at progress `u` (0..1) in the running simulation.
     void startApproach(float u);
+    // Dev aid: choose the flyby course on the aim grid, each axis -1..1 (x right, y up).
+    void setApproachAim(float x, float y) { m_approach.setAim({x, y}); }
     // Dev aid: turn the camera around the target at `radPerSec`.
     void setAutoOrbit(float radPerSec) { m_autoOrbit = radPerSec; }
     // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
@@ -51,7 +53,10 @@ private:
     void drawOverlays();
     void drawFps();
     void drawApproachHud();
+    void drawDeathOverlay();
+    void drawAimGrid();
     void toggleApproach();
+    void restartApproach();
     bool keyPressedOnce(int key);
 
     Window m_window;

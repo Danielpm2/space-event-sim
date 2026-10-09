@@ -103,6 +103,13 @@ void App::toggleApproach() {
         m_approach.start(*m_sim);
 }
 
+void App::restartApproach() {
+    if (!m_sim || !m_sim->supportsApproach())
+        return;
+    m_approach.stop(*m_sim);
+    m_approach.start(*m_sim);
+}
+
 void App::backToMenu() {
     m_renderer.reset();
     m_sim.reset();
@@ -138,19 +145,18 @@ void App::drawSimulationUi() {
         const bool canApproach = m_sim->supportsApproach();
         if (ImGui::CollapsingHeader("Camera", canApproach ? ImGuiTreeNodeFlags_DefaultOpen : 0)) {
             if (canApproach) {
+                drawAimGrid();
                 if (!m_approach.active()) {
-                    if (ImGui::Button("Approach the event (A)", ImVec2(-1.f, 0.f)))
+                    if (ImGui::Button("Fly this course (A)", ImVec2(-1.f, 0.f)))
                         toggleApproach();
                 } else {
                     ImGui::ProgressBar(m_approach.progress(), ImVec2(-1.f, 0.f));
                     const float halfW = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) * 0.5f;
-                    if (ImGui::Button("Leave approach (A)", ImVec2(halfW, 0.f)))
+                    if (ImGui::Button("Leave (A)", ImVec2(halfW, 0.f)))
                         toggleApproach();
                     ImGui::SameLine();
-                    if (ImGui::Button("Restart", ImVec2(halfW, 0.f))) {
-                        m_approach.stop(*m_sim);
-                        m_approach.start(*m_sim);
-                    }
+                    if (ImGui::Button("Try again (R)", ImVec2(halfW, 0.f)))
+                        restartApproach();
                 }
             }
             ImGui::BeginDisabled(m_approach.active());
@@ -196,11 +202,12 @@ void App::drawHelp() {
                                    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse;
     if (ImGui::Begin("Controls", &m_showHelp, flags)) {
         static const char* rows[][2] = {
-            {"Left-drag", "Orbit the camera"},
+            {"Left-drag", "Orbit the camera (glance around when flying)"},
             {"Scroll  /  W S", "Zoom in and out"},
             {"Arrow keys", "Orbit the camera"},
             {"Space", "Pause / resume the simulation"},
-            {"A", "Start / leave the cinematic approach"},
+            {"A", "Fly the chosen course / leave it"},
+            {"R", "Fly the course again"},
             {"B", "Toggle bloom"},
             {"H", "Hide / show the interface"},
             {"F11", "Toggle fullscreen"},
@@ -247,6 +254,96 @@ void App::drawOverlays() {
     }
 }
 
+void App::drawAimGrid() {
+    const core::ApproachSpec spec = m_sim->approachSpec();
+    const core::ApproachReadout ro = m_sim->approachReadout();
+    const float lethal = m_sim->approachLethalRadius();
+    const float side = std::min(ImGui::GetContentRegionAvail().x, 240.f);
+    const ImVec2 p0 = ImGui::GetCursorScreenPos();
+    const ImVec2 p1(p0.x + side, p0.y + side);
+    const ImVec2 c(p0.x + side * 0.5f, p0.y + side * 0.5f);
+    const float scale = side * 0.5f / spec.gridExtent; // pixels per scene unit
+
+    ImGui::InvisibleButton("##aimgrid", ImVec2(side, side));
+    const bool editable = !m_approach.active();
+    if (editable && ImGui::IsItemActive()) {
+        const ImVec2 m = ImGui::GetIO().MousePos;
+        m_approach.setAim({(m.x - p0.x) / side * 2.f - 1.f, 1.f - (m.y - p0.y) / side * 2.f});
+    }
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    dl->PushClipRect(p0, p1, true);
+    dl->AddRectFilled(p0, p1, IM_COL32(6, 8, 16, 230));
+    for (int i = 1; i < 8; ++i) {
+        const float t = side * static_cast<float>(i) / 8.f;
+        const ImU32 col = i == 4 ? IM_COL32(255, 255, 255, 70) : IM_COL32(255, 255, 255, 24);
+        dl->AddLine(ImVec2(p0.x + t, p0.y), ImVec2(p0.x + t, p1.y), col);
+        dl->AddLine(ImVec2(p0.x, p0.y + t), ImVec2(p1.x, p0.y + t), col);
+    }
+    const auto shapes = m_sim->approachShapes();
+    for (const core::ApproachShape& s : shapes) {
+        if (s.bar) {
+            const float hh = std::max(s.thickness * scale, 1.5f);
+            dl->AddRectFilled(ImVec2(c.x - s.radius * scale, c.y - hh), ImVec2(c.x + s.radius * scale, c.y + hh),
+                              IM_COL32(255, 150, 60, 150));
+        } else {
+            dl->AddCircle(c, std::max(s.radius * scale, 2.f), IM_COL32(120, 180, 255, 210), 48, 1.5f);
+        }
+    }
+    if (lethal > 0.f)
+        dl->AddCircleFilled(c, std::max(lethal * scale, 2.5f), IM_COL32(220, 40, 40, 210));
+
+    const ImVec2 aimPx(c.x + m_approach.aim().x * side * 0.5f, c.y - m_approach.aim().y * side * 0.5f);
+    const float offsetUnits = glm::length(m_approach.aim() * spec.gridExtent);
+    const bool fatal = lethal > 0.f && offsetUnits <= lethal;
+    const ImU32 aimCol = fatal ? IM_COL32(255, 70, 70, 255) : IM_COL32(120, 255, 170, 255);
+    dl->AddCircle(aimPx, 7.f, aimCol, 24, 1.5f);
+    dl->AddLine(ImVec2(aimPx.x - 12.f, aimPx.y), ImVec2(aimPx.x + 12.f, aimPx.y), aimCol);
+    dl->AddLine(ImVec2(aimPx.x, aimPx.y - 12.f), ImVec2(aimPx.x, aimPx.y + 12.f), aimCol);
+
+    const ImU32 edgeCol = IM_COL32(255, 255, 255, 110);
+    const ImVec2 right = ImGui::CalcTextSize("RIGHT"), above = ImGui::CalcTextSize("ABOVE"),
+                 below = ImGui::CalcTextSize("BELOW");
+    dl->AddText(ImVec2(p0.x + 4.f, c.y + 2.f), edgeCol, "LEFT");
+    dl->AddText(ImVec2(p1.x - right.x - 4.f, c.y + 2.f), edgeCol, "RIGHT");
+    dl->AddText(ImVec2(c.x - above.x * 0.5f, p0.y + 3.f), edgeCol, "ABOVE");
+    dl->AddText(ImVec2(c.x - below.x * 0.5f, p1.y - below.y - 3.f), edgeCol, "BELOW");
+    dl->PopClipRect();
+    dl->AddRect(p0, p1, IM_COL32(255, 255, 255, 90));
+
+    const double kmPerAu = 1.495978707e8;
+    ImGui::TextDisabled(editable ? "Click or drag to choose where to pass. Edge = %.1f AU."
+                                 : "Course locked. Edge = %.1f AU.",
+                        static_cast<double>(spec.gridExtent) * ro.kmPerUnit / kmPerAu);
+    for (const core::ApproachShape& s : shapes)
+        ImGui::TextColored(s.bar ? ImVec4(1.f, 0.6f, 0.25f, 1.f) : ImVec4(0.5f, 0.72f, 1.f, 1.f), "%s", s.label);
+    if (lethal > 0.f)
+        ImGui::TextColored(ImVec4(0.9f, 0.3f, 0.3f, 1.f), "Fatal zone");
+    ImGui::Text("Closest pass: %s", formatDistance(static_cast<double>(offsetUnits) * ro.kmPerUnit).c_str());
+    if (fatal)
+        ImGui::TextColored(ImVec4(1.f, 0.35f, 0.35f, 1.f), "This course ends in destruction.");
+}
+
+void App::drawDeathOverlay() {
+    if (!m_sim || !m_approach.active() || m_approach.deathFade() <= 0.f)
+        return;
+    const ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImDrawList* dl = ImGui::GetForegroundDrawList();
+    ImFont* font = ImGui::GetFont();
+    const float base = ImGui::GetFontSize();
+    dl->AddRectFilled(vp->Pos, ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
+                      IM_COL32(0, 0, 0, static_cast<int>(255.f * m_approach.deathFade())));
+    if (!m_approach.dead())
+        return;
+    const char* title = "SIGNAL LOST";
+    const char* hint = "R  try again     A  leave";
+    const ImVec2 ts = font->CalcTextSizeA(base * 2.4f, FLT_MAX, 0.f, title);
+    const ImVec2 hs = font->CalcTextSizeA(base, FLT_MAX, 0.f, hint);
+    const float cx = vp->Pos.x + vp->Size.x * 0.5f, cy = vp->Pos.y + vp->Size.y * 0.5f;
+    dl->AddText(font, base * 2.4f, ImVec2(cx - ts.x * 0.5f, cy - ts.y), IM_COL32(200, 70, 70, 230), title);
+    dl->AddText(font, base, ImVec2(cx - hs.x * 0.5f, cy + base), IM_COL32(255, 255, 255, 140), hint);
+}
+
 void App::drawApproachHud() {
     if (!m_sim || !m_approach.active())
         return;
@@ -269,8 +366,10 @@ void App::drawApproachHud() {
 
     const core::ApproachReadout r = m_sim->approachReadout();
     const float d = m_sim->camera.distance;
+    const float closest = glm::length(m_approach.aim() * m_sim->approachSpec().gridExtent);
     std::vector<std::string> lines;
     lines.push_back("DISTANCE   " + formatDistance(static_cast<double>(d) * r.kmPerUnit));
+    lines.push_back("CLOSEST PASS   " + formatDistance(static_cast<double>(closest) * r.kmPerUnit));
     char buf[160];
     if (r.enclosing && d < r.radius) {
         std::snprintf(buf, sizeof(buf), "INSIDE   %s", r.subject);
@@ -287,12 +386,13 @@ void App::drawApproachHud() {
         lines.push_back(buf);
     }
     if (m_approach.finished())
-        lines.push_back("A leave   |   Space pause");
+        lines.push_back("R fly again   |   A leave");
 
     const float lineH = base * 1.35f;
     float y = y0 + h - bar - 14.f - lineH * static_cast<float>(lines.size());
     for (const std::string& s : lines) {
-        dl->AddText(ImVec2(x0 + 26.f, y), IM_COL32(220, 232, 255, 200), s.c_str());
+        const float tw = ImGui::CalcTextSize(s.c_str()).x;
+        dl->AddText(ImVec2(x0 + w - tw - 26.f, y), IM_COL32(220, 232, 255, 200), s.c_str());
         y += lineH;
     }
 }
@@ -387,9 +487,12 @@ int App::run() {
                 m_paused = !m_paused;
             if (keyPressedOnce(GLFW_KEY_A))
                 toggleApproach();
+            if (keyPressedOnce(GLFW_KEY_R))
+                restartApproach();
         } else {
             keyPressedOnce(GLFW_KEY_B); // keep the edge detector in sync
             keyPressedOnce(GLFW_KEY_A);
+            keyPressedOnce(GLFW_KEY_R);
         }
         m_fade = std::max(0.f, m_fade - static_cast<float>(dt) / 0.35f);
         if (m_sim) {
@@ -424,7 +527,7 @@ int App::run() {
                     core::PostFxSettings fx = m_fx;
                     if (m_approach.active()) {
                         fx.vignette = 0.25f + 0.45f * m_approach.proximity();
-                        fx.aberration = 0.003f + 0.012f * m_approach.shake();
+                        fx.aberration = 0.0015f + 0.006f * m_approach.shake();
                     }
                     m_post.apply(fx, w, h);
                 }
@@ -441,6 +544,7 @@ int App::run() {
             if (m_sim) {
                 drawSimulationUi();
                 drawApproachHud();
+                drawDeathOverlay();
                 if (m_uiVisible)
                     drawFps();
             } else {

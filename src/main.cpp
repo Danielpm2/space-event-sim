@@ -19,7 +19,7 @@ std::string lower(std::string s) {
 } // namespace
 
 // Usage: spacesim [--sim <name>] [--warp <seconds>] [--screenshot <file.ppm>] [--no-bloom] [--no-ui]
-//                 [--record <prefix> <frames>] [--orbit <rad/s>] [--approach <0..1>]
+//                 [--record <prefix> <frames>] [--orbit <rad/s>] [--approach <0..1>] [--aim <x> <y>]
 int main(int argc, char** argv) {
     try {
         render::App app;
@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
                 warp = std::atof(argv[i + 1]);
             if (std::strcmp(argv[i], "--approach") == 0)
                 approach = std::atof(argv[i + 1]);
+            if (std::strcmp(argv[i], "--aim") == 0 && i + 2 < argc)
+                app.setApproachAim(static_cast<float>(std::atof(argv[i + 1])), static_cast<float>(std::atof(argv[i + 2])));
             if (std::strcmp(argv[i], "--sim") != 0)
                 continue;
             const auto& entries = render::registry();
