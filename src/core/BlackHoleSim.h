@@ -29,6 +29,7 @@ public:
     std::vector<ApproachShape> approachShapes() const override;
     ApproachReadout approachReadout() const override;
     float approachTimeDilation(float distance) const override;
+    glm::vec3 approachGlow() const override { return glm::vec3(1.0f, 0.65f, 0.3f) * 0.9f; }
 
     float mass = 1.f;          // scale of the hole
     float spin = 0.6f;         // a/M, 0..0.99

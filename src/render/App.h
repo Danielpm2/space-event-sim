@@ -2,6 +2,7 @@
 
 #include "render/ApproachFx.h"
 #include "render/AudioDevice.h"
+#include "render/CockpitRenderer.h"
 #include "render/FullscreenTriangle.h"
 #include "render/ImGuiLayer.h"
 #include "render/PostProcess.h"
@@ -60,6 +61,7 @@ private:
     void drawDeathOverlay();
     void drawAimGrid();
     void updateAudio();
+    float flightSpeed01() const;
     void toggleApproach();
     void restartApproach();
     bool keyPressedOnce(int key);
@@ -70,6 +72,8 @@ private:
     FullscreenTriangle m_triangle;
     PostProcess m_post;
     ApproachFx m_approachFx;
+    CockpitRenderer m_cockpit;
+    bool m_cockpitOn = true;
     core::ApproachController m_approach;
     core::ShipAudio m_shipAudio; // declared before m_audio: the device must stop first
     std::unique_ptr<AudioDevice> m_audio;

@@ -58,7 +58,7 @@ See [docs/REFERENCES.md](docs/REFERENCES.md) for the sources.
 
 ## Build (Linux)
 
-Requirements: CMake >= 3.20, a C++17 compiler, git, network access (GLFW, GLM and Dear ImGui are fetched by CMake), and X11 development packages for GLFW.
+Requirements: CMake >= 3.20, a C++17 compiler, git, network access (GLFW, GLM, Dear ImGui and miniaudio are fetched by CMake), and X11 development packages for GLFW. Audio needs no extra packages; miniaudio loads PulseAudio or ALSA at run time.
 
 ```sh
 # Debian / Ubuntu / Pop!_OS
@@ -73,7 +73,11 @@ cmake --build build -j
 GLFW's Wayland backend is built only if `libwayland-dev`, `libxkbcommon-dev`, `wayland-protocols` and `wayland-scanner` are installed; otherwise the X11 backend is used (XWayland on Wayland sessions).
 
 Options: `./build/spacesim --sim pulsar` (or `"black hole"`, `supernova`, `"neutron star merger"`, `magnetar`) skips the menu.
-Dev aids: `--warp <seconds>` fast-forwards the simulation, `--screenshot <file.ppm>` saves a frame and exits, and `--no-ui` hides all interface elements. `--record <prefix> <frames>` writes numbered PPM frames at a fixed 30 fps and exits, and `--orbit <rad/s>` turns the camera. The images and GIFs in `docs/images/` were made with these, e.g. `ffmpeg -framerate 30 -i prefix_%04d.ppm out.gif`.
+Dev aids: `--warp <seconds>` fast-forwards the simulation, `--screenshot <file.ppm>` saves a frame and exits, and `--no-ui` hides all interface elements. `--record <prefix> <frames>` writes numbered PPM frames at a fixed 30 fps and exits, and `--orbit <rad/s>` turns the camera. `--approach <0..1>` starts the flyby at that progress, `--aim <x> <y>` picks its course (each -1..1), and `--no-audio` never opens an audio device. The images and GIFs in `docs/images/` were made with these, e.g. `ffmpeg -framerate 30 -i prefix_%04d.ppm out.gif`.
+
+## Flyby
+
+The supernova and the black hole can be flown past in first person. In the Camera section, click or drag on the grid to choose where to pass (the event is at the centre; the black hole's disk is the orange bar, the red disc is fatal), then press A. The pilot's gaze tracks the event and the mouse glances away. The ship rattles harder as it nears the event, with a procedural ambient engine bed, rumble, a shock-wave boom and static if the ship is lost. Passing too close fades to black; R tries again.
 
 ## Tests
 
@@ -84,7 +88,7 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-They check the black hole against the Kerr horizon and ISCO values, the camera clamps, the pulsar beam geometry, the supernova and merger timelines (including looping), magnetar field lines and flares, and that every slider starts in range. GitHub Actions builds the project and runs them on every push.
+They check the black hole against the Kerr horizon and ISCO values, the camera clamps, the pulsar beam geometry, the supernova and merger timelines (including looping), magnetar field lines and flares, the flyby path and death rules, the ship audio synthesis, and that every slider starts in range. GitHub Actions builds the project and runs them on every push.
 
 ## Controls
 
@@ -100,6 +104,10 @@ They check the black hole against the Kerr horizon and ISCO values, the camera c
 | F1 | Controls help overlay |
 | 1-5 (menu) | Launch a simulation |
 | B | Toggle bloom (settings under "Post-processing" in the panel) |
+| A | Fly the chosen course past the event / leave it (supernova, black hole) |
+| R | Fly the course again |
+| M | Mute / unmute the ship audio |
+| C | Show / hide the cockpit frame |
 
 ## Layout
 

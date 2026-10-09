@@ -58,6 +58,8 @@ public:
     // 0..1 burst of event energy that should rattle the ship.
     virtual float approachImpulse() const { return 0.f; }
     virtual ApproachReadout approachReadout() const { return {}; }
+    // Colour and strength of the light the event throws on the ship's interior.
+    virtual glm::vec3 approachGlow() const { return glm::vec3(0.4f, 0.5f, 0.8f); }
     // Clock rate at `distance` relative to a distant observer (1 = unaffected).
     virtual float approachTimeDilation(float /*distance*/) const { return 1.f; }
 

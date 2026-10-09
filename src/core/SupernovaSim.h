@@ -41,6 +41,9 @@ public:
     float approachClockScale() const override { return 0.3f; }
     float approachImpulse() const override { return flash(); }
     ApproachReadout approachReadout() const override;
+    glm::vec3 approachGlow() const override {
+        return glm::vec3(1.0f, 0.5f, 0.2f) * (0.4f + shellBrightness() + flash());
+    }
 
     float progenitorMass = 20.f; // solar masses
     float energy = 1.f;          // relative explosion energy

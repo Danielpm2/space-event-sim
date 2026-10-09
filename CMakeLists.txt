@@ -107,6 +107,7 @@ add_executable(spacesim
     src/render/PostProcess.cpp
     src/render/ApproachFx.cpp
     src/render/AudioDevice.cpp
+    src/render/CockpitRenderer.cpp
     src/render/Primitives.cpp
     src/render/Shader.cpp
     src/render/ImGuiLayer.cpp

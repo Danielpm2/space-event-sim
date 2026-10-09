@@ -103,17 +103,21 @@ void App::toggleApproach() {
         m_approach.start(*m_sim);
 }
 
+float App::flightSpeed01() const {
+    const core::ApproachSpec spec = m_sim->approachSpec();
+    const float cruise = spec.startDistance / std::max(spec.duration, 1.f) * 3.f;
+    return std::min(1.f, m_approach.speed() / std::max(cruise, 1e-3f));
+}
+
 void App::updateAudio() {
     core::ShipAudioParams ap;
     ap.volume = m_audioOn ? m_audioVolume : 0.f;
     if (m_sim && m_approach.active()) {
         if (!m_audio && !m_audioDisabled)
             m_audio = std::make_unique<AudioDevice>(m_shipAudio);
-        const core::ApproachSpec spec = m_sim->approachSpec();
-        const float cruise = spec.startDistance / std::max(spec.duration, 1.f) * 3.f;
         ap.active = m_paused ? 0.f : 1.f;
         ap.shake = m_approach.shake();
-        ap.speed = std::min(1.f, m_approach.speed() / std::max(cruise, 1e-3f));
+        ap.speed = flightSpeed01();
         ap.proximity = m_approach.proximity();
         ap.impulse = m_sim->approachImpulse();
         ap.deathFade = m_approach.deathFade();
@@ -176,6 +180,7 @@ void App::drawSimulationUi() {
                     if (ImGui::Button("Try again (R)", ImVec2(halfW, 0.f)))
                         restartApproach();
                 }
+                ImGui::Checkbox("Cockpit frame (C)", &m_cockpitOn);
                 ImGui::Checkbox("Ship audio (M)", &m_audioOn);
                 ImGui::BeginDisabled(!m_audioOn);
                 ImGui::SliderFloat("Volume", &m_audioVolume, 0.f, 1.f, "%.2f");
@@ -231,6 +236,7 @@ void App::drawHelp() {
             {"A", "Fly the chosen course / leave it"},
             {"R", "Fly the course again"},
             {"M", "Mute / unmute the ship audio"},
+            {"C", "Show / hide the cockpit frame"},
             {"B", "Toggle bloom"},
             {"H", "Hide / show the interface"},
             {"F11", "Toggle fullscreen"},
@@ -514,11 +520,14 @@ int App::run() {
                 restartApproach();
             if (keyPressedOnce(GLFW_KEY_M))
                 m_audioOn = !m_audioOn;
+            if (keyPressedOnce(GLFW_KEY_C))
+                m_cockpitOn = !m_cockpitOn;
         } else {
             keyPressedOnce(GLFW_KEY_B); // keep the edge detector in sync
             keyPressedOnce(GLFW_KEY_A);
             keyPressedOnce(GLFW_KEY_R);
             keyPressedOnce(GLFW_KEY_M);
+            keyPressedOnce(GLFW_KEY_C);
         }
         m_fade = std::max(0.f, m_fade - static_cast<float>(dt) / 0.35f);
         if (m_sim) {
@@ -549,6 +558,19 @@ int App::run() {
                 if (m_approach.active()) {
                     const float intensity = std::min(1.f, m_approach.speed() / 0.4f) * 0.9f;
                     m_approachFx.draw(m_sim->camera, m_approach.velocity(), static_cast<float>(w) / h, intensity);
+                    if (m_cockpitOn) {
+                        const glm::vec3 toEvent = glm::vec3(m_sim->camera.view() * glm::vec4(0.f, 0.f, 0.f, 1.f));
+                        const float prox = m_approach.proximity();
+                        CockpitState cs;
+                        cs.eventDir = glm::length(toEvent) > 1e-4f ? glm::normalize(toEvent) : glm::vec3(0.f, 0.f, -1.f);
+                        cs.glow = m_sim->approachGlow() * (0.15f + 0.9f * prox * std::sqrt(prox));
+                        cs.vibration = m_approach.vibration();
+                        cs.speed = flightSpeed01();
+                        cs.shake = m_approach.shake();
+                        cs.proximity = prox;
+                        cs.time = m_approach.elapsed();
+                        m_cockpit.draw(cs, static_cast<float>(w) / h);
+                    }
                 }
                 if (hdr) {
                     core::PostFxSettings fx = m_fx;

@@ -47,6 +47,8 @@ public:
     // Smoothed ship velocity in scene units per second (zero while paused).
     const glm::vec3& velocity() const { return m_velocity; }
     float speed() const { return m_speed; }
+    // Small rotation angles (radians) of the cockpit relative to the pilot's head.
+    const glm::vec3& vibration() const { return m_vibration; }
 
 private:
     glm::vec2 m_aim{-0.45f, 0.15f};
@@ -65,6 +67,7 @@ private:
     float m_deathFade = 0.f;
     float m_speed = 0.f;
     glm::vec3 m_velocity{0.f};
+    glm::vec3 m_vibration{0.f};
     glm::vec3 m_prevPos{0.f};
     bool m_havePrev = false;
     OrbitCamera m_saved;

@@ -141,6 +141,9 @@ void ApproachController::update(Simulation& sim, double dtd) {
     m_havePrev = true;
 
     const float amp = kShakeAngle * m_shake;
+    const float rattle = 0.0008f + 0.006f * m_shake;
+    m_vibration = {rattle * wobble(m_clock, 37.f, 61.f, 0.9f), rattle * wobble(m_clock, 43.f, 71.f, 2.1f),
+                   0.6f * rattle * wobble(m_clock, 29.f, 53.f, 3.7f)};
     const float yaw = m_gazeYaw + m_lookYaw + amp * wobble(m_clock, 13.1f, 29.7f, 0.3f);
     const float pitch = std::clamp(m_gazePitch + m_lookPitch + amp * wobble(m_clock, 11.3f, 23.9f, 1.7f),
                                    -kMaxPitch, kMaxPitch);
