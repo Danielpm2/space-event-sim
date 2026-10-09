@@ -1,7 +1,5 @@
 #include "core/SupernovaSim.h"
 
-#include "core/Easing.h"
-
 #include <algorithm>
 #include <cmath>
 
@@ -54,7 +52,11 @@ float SupernovaSim::shockRadius() const {
     const float tau = sinceBlast();
     if (tau <= 0.f)
         return 0.f;
-    return 1.25f * std::sqrt(energy) * std::pow(tau, 0.68f);
+    return shockRadiusAtTau(tau);
+}
+
+float SupernovaSim::shockRadiusAtTau(float tau) const {
+    return 1.25f * std::sqrt(energy) * std::pow(std::max(tau, 0.f), 0.68f);
 }
 
 float SupernovaSim::shellThickness() const {
@@ -71,16 +73,24 @@ float SupernovaSim::fade() const {
     return smoothstep(0.f, 0.6f, m_t) * (1.f - smoothstep(kCycleTime - 3.f, kCycleTime, m_t));
 }
 
-CameraPose SupernovaSim::approachPose(float u) const {
-    const float s = std::pow(std::clamp(u, 0.f, 1.f), 1.6f);
-    const float e = smooth01(u);
-    CameraPose p;
-    p.distance = logLerp(95.f, 3.f, s); // ends inside the expanding shell
-    p.yaw = lerp(0.4f, 1.7f, e);
-    p.pitch = lerp(0.3f, 0.08f, e);
-    p.roll = 0.06f * std::sin(u * 5.f);
-    p.fovY = lerp(48.f, 68.f, e);
-    return p;
+ApproachSpec SupernovaSim::approachSpec() const {
+    ApproachSpec s;
+    s.startDistance = 95.f;
+    s.gridExtent = 30.f;
+    s.nearDistance = 3.f;
+    s.fovStart = 48.f;
+    s.fovEnd = 68.f;
+    return s;
+}
+
+std::vector<ApproachShape> SupernovaSim::approachShapes() const {
+    // The sim restarts at the collapse when the approach begins, so the closest pass
+    // happens at a predictable point of the blast.
+    const ApproachSpec s = approachSpec();
+    const float tau = 0.5f * s.duration * approachClockScale() * timeScale - kCollapseTime;
+    if (tau <= 0.f)
+        return {};
+    return {{false, shockRadiusAtTau(tau), 0.f, "Blast wave"}};
 }
 
 ApproachReadout SupernovaSim::approachReadout() const {

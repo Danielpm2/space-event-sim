@@ -1,7 +1,5 @@
 #include "core/BlackHoleSim.h"
 
-#include "core/Easing.h"
-
 #include <algorithm>
 #include <cmath>
 
@@ -36,16 +34,23 @@ float BlackHoleSim::iscoRadius() const {
     return mass * (3.f + z2 - std::sqrt((3.f - z1) * (3.f + z1 + 2.f * z2)));
 }
 
-CameraPose BlackHoleSim::approachPose(float u) const {
-    const float s = std::pow(std::clamp(u, 0.f, 1.f), 1.4f);
-    const float e = smooth01(u);
-    CameraPose p;
-    p.distance = logLerp(110.f, 5.5f * mass, s); // stays outside the photon sphere
-    p.yaw = lerp(0.f, 2.6f, e);
-    p.pitch = lerp(0.2f, 0.1f, e);
-    p.roll = 0.08f * std::sin(u * 3.1416f);
-    p.fovY = lerp(50.f, 62.f, e);
-    return p;
+ApproachSpec BlackHoleSim::approachSpec() const {
+    ApproachSpec s;
+    s.startDistance = 110.f;
+    s.gridExtent = std::max(40.f, 1.3f * diskOuterRadius());
+    s.nearDistance = 5.5f * mass;
+    s.fovStart = 50.f;
+    s.fovEnd = 62.f;
+    return s;
+}
+
+std::vector<ApproachShape> BlackHoleSim::approachShapes() const {
+    // The disk lies in the XZ plane, so it is edge-on to a ship flying along -Z.
+    return {
+        {true, diskOuterRadius(), 0.25f * mass, "Accretion disk"},
+        {false, 1.5f * schwarzschildRadius(), 0.f, "Photon sphere"},
+        {false, horizonRadius(), 0.f, "Event horizon"},
+    };
 }
 
 ApproachReadout BlackHoleSim::approachReadout() const {

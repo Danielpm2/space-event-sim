@@ -24,7 +24,9 @@ public:
     float diskTime() const { return m_diskTime; }
 
     bool supportsApproach() const override { return true; }
-    CameraPose approachPose(float u) const override;
+    ApproachSpec approachSpec() const override;
+    float approachLethalRadius() const override { return 1.3f * horizonRadius(); }
+    std::vector<ApproachShape> approachShapes() const override;
     ApproachReadout approachReadout() const override;
     float approachTimeDilation(float distance) const override;
 

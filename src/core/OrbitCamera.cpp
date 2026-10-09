@@ -18,22 +18,31 @@ void OrbitCamera::zoom(float factor) {
 }
 
 glm::vec3 OrbitCamera::position() const {
+    if (firstPerson)
+        return eye;
     return target + distance * glm::vec3(std::cos(pitch) * std::sin(yaw),
                                          std::sin(pitch),
                                          std::cos(pitch) * std::cos(yaw));
 }
 
-glm::vec3 OrbitCamera::forward() const { return glm::normalize(target - position()); }
+glm::vec3 OrbitCamera::forward() const {
+    return firstPerson ? glm::normalize(heading) : glm::normalize(target - position());
+}
 
-CameraPose OrbitCamera::pose() const { return {yaw, pitch, distance, roll, fovY, target}; }
+CameraPose OrbitCamera::pose() const {
+    return {yaw, pitch, distance, roll, fovY, target, firstPerson, eye, heading};
+}
 
 void OrbitCamera::setPose(const CameraPose& p) {
     yaw = p.yaw;
     pitch = p.pitch;
-    distance = p.distance;
     roll = p.roll;
     fovY = p.fovY;
     target = p.target;
+    firstPerson = p.firstPerson;
+    eye = p.eye;
+    heading = p.heading;
+    distance = p.firstPerson ? glm::length(p.eye - p.target) : p.distance;
 }
 
 glm::vec3 OrbitCamera::right() const {
@@ -51,7 +60,8 @@ glm::vec3 OrbitCamera::up() const {
 }
 
 glm::mat4 OrbitCamera::view() const {
-    return glm::lookAt(position(), target, up());
+    const glm::vec3 p = position();
+    return glm::lookAt(p, p + forward(), up());
 }
 
 glm::mat4 OrbitCamera::projection(float aspect) const {

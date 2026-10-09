@@ -5,6 +5,8 @@
 namespace core {
 
 // Everything a scripted camera move needs to place the camera.
+// With firstPerson set, the camera sits at `eye` looking along `heading` and
+// yaw/pitch/distance are ignored (distance is kept as |eye - target|).
 struct CameraPose {
     float yaw = 0.f;
     float pitch = 0.f;
@@ -12,6 +14,9 @@ struct CameraPose {
     float roll = 0.f;
     float fovY = 45.f;
     glm::vec3 target{0.f};
+    bool firstPerson = false;
+    glm::vec3 eye{0.f};
+    glm::vec3 heading{0.f, 0.f, -1.f};
 };
 
 // Camera orbiting a target point. Pure math, no GL.
@@ -25,6 +30,10 @@ public:
     float maxDistance = 80.f;
     float fovY = 45.f;      // degrees
     glm::vec3 target{0.f};
+
+    bool firstPerson = false;
+    glm::vec3 eye{0.f};
+    glm::vec3 heading{0.f, 0.f, -1.f};
 
     void orbit(float dYaw, float dPitch);
     void zoom(float factor); // factor > 1 moves away

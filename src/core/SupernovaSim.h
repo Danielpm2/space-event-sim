@@ -25,13 +25,17 @@ public:
     float starBrightness() const;   // brightens during collapse
     float flash() const;            // bright burst at core bounce
     float shockRadius() const;
+    // Blast-wave radius `tau` seconds after the core bounce.
+    float shockRadiusAtTau(float tau) const;
     float shellThickness() const;
     float shellBrightness() const;
     float fade() const;             // smooth loop in/out
     float remnantGlow() const { return exploded() ? 1.f : 0.f; }
 
     bool supportsApproach() const override { return true; }
-    CameraPose approachPose(float u) const override;
+    ApproachSpec approachSpec() const override;
+    float approachLethalRadius() const override { return 0.35f; } // the remnant core
+    std::vector<ApproachShape> approachShapes() const override;
     // Restart from the collapse and slow the clock so the blast unfolds during the flight.
     void beginApproach() override { m_t = 0.f; }
     float approachClockScale() const override { return 0.3f; }
