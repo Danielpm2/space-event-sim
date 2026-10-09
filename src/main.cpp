@@ -18,7 +18,7 @@ std::string lower(std::string s) {
 
 } // namespace
 
-// Usage: spacesim [--sim <name>] [--warp <seconds>] [--screenshot <file.ppm>] [--no-bloom] [--no-ui]
+// Usage: spacesim [--sim <name>] [--warp <seconds>] [--screenshot <file.ppm>] [--no-bloom] [--no-ui] [--no-audio]
 //                 [--record <prefix> <frames>] [--orbit <rad/s>] [--approach <0..1>] [--aim <x> <y>]
 int main(int argc, char** argv) {
     try {
@@ -30,6 +30,8 @@ int main(int argc, char** argv) {
                 app.postFx().bloomEnabled = false;
             if (std::strcmp(argv[i], "--no-ui") == 0)
                 app.hideUi();
+            if (std::strcmp(argv[i], "--no-audio") == 0)
+                app.disableAudio();
         }
         for (int i = 1; i + 1 < argc; ++i) {
             if (std::strcmp(argv[i], "--record") == 0 && i + 2 < argc)

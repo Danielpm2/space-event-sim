@@ -103,6 +103,24 @@ void App::toggleApproach() {
         m_approach.start(*m_sim);
 }
 
+void App::updateAudio() {
+    core::ShipAudioParams ap;
+    ap.volume = m_audioOn ? m_audioVolume : 0.f;
+    if (m_sim && m_approach.active()) {
+        if (!m_audio && !m_audioDisabled)
+            m_audio = std::make_unique<AudioDevice>(m_shipAudio);
+        const core::ApproachSpec spec = m_sim->approachSpec();
+        const float cruise = spec.startDistance / std::max(spec.duration, 1.f) * 3.f;
+        ap.active = m_paused ? 0.f : 1.f;
+        ap.shake = m_approach.shake();
+        ap.speed = std::min(1.f, m_approach.speed() / std::max(cruise, 1e-3f));
+        ap.proximity = m_approach.proximity();
+        ap.impulse = m_sim->approachImpulse();
+        ap.deathFade = m_approach.deathFade();
+    }
+    m_shipAudio.setParams(ap);
+}
+
 void App::restartApproach() {
     if (!m_sim || !m_sim->supportsApproach())
         return;
@@ -158,6 +176,10 @@ void App::drawSimulationUi() {
                     if (ImGui::Button("Try again (R)", ImVec2(halfW, 0.f)))
                         restartApproach();
                 }
+                ImGui::Checkbox("Ship audio (M)", &m_audioOn);
+                ImGui::BeginDisabled(!m_audioOn);
+                ImGui::SliderFloat("Volume", &m_audioVolume, 0.f, 1.f, "%.2f");
+                ImGui::EndDisabled();
             }
             ImGui::BeginDisabled(m_approach.active());
             ImGui::SliderFloat("Field of view", &m_sim->camera.fovY, 25.f, 90.f, "%.0f deg");
@@ -208,6 +230,7 @@ void App::drawHelp() {
             {"Space", "Pause / resume the simulation"},
             {"A", "Fly the chosen course / leave it"},
             {"R", "Fly the course again"},
+            {"M", "Mute / unmute the ship audio"},
             {"B", "Toggle bloom"},
             {"H", "Hide / show the interface"},
             {"F11", "Toggle fullscreen"},
@@ -489,16 +512,20 @@ int App::run() {
                 toggleApproach();
             if (keyPressedOnce(GLFW_KEY_R))
                 restartApproach();
+            if (keyPressedOnce(GLFW_KEY_M))
+                m_audioOn = !m_audioOn;
         } else {
             keyPressedOnce(GLFW_KEY_B); // keep the edge detector in sync
             keyPressedOnce(GLFW_KEY_A);
             keyPressedOnce(GLFW_KEY_R);
+            keyPressedOnce(GLFW_KEY_M);
         }
         m_fade = std::max(0.f, m_fade - static_cast<float>(dt) / 0.35f);
         if (m_sim) {
             handleCameraInput(dt);
             m_approach.update(*m_sim, m_paused ? 0.0 : dt);
         }
+        updateAudio();
         if (m_sim && m_autoOrbit != 0.f && !m_approach.active())
             m_sim->camera.yaw += m_autoOrbit * static_cast<float>(dt);
 

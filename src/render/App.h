@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/ApproachFx.h"
+#include "render/AudioDevice.h"
 #include "render/FullscreenTriangle.h"
 #include "render/ImGuiLayer.h"
 #include "render/PostProcess.h"
@@ -10,6 +11,7 @@
 
 #include "core/ApproachController.h"
 #include "core/PostFxSettings.h"
+#include "core/ShipAudio.h"
 #include "core/Simulation.h"
 
 #include <memory>
@@ -37,6 +39,8 @@ public:
     void startApproach(float u);
     // Dev aid: choose the flyby course on the aim grid, each axis -1..1 (x right, y up).
     void setApproachAim(float x, float y) { m_approach.setAim({x, y}); }
+    // Dev aid: never open an audio device.
+    void disableAudio() { m_audioDisabled = true; }
     // Dev aid: turn the camera around the target at `radPerSec`.
     void setAutoOrbit(float radPerSec) { m_autoOrbit = radPerSec; }
     // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
@@ -55,6 +59,7 @@ private:
     void drawApproachHud();
     void drawDeathOverlay();
     void drawAimGrid();
+    void updateAudio();
     void toggleApproach();
     void restartApproach();
     bool keyPressedOnce(int key);
@@ -66,6 +71,11 @@ private:
     PostProcess m_post;
     ApproachFx m_approachFx;
     core::ApproachController m_approach;
+    core::ShipAudio m_shipAudio; // declared before m_audio: the device must stop first
+    std::unique_ptr<AudioDevice> m_audio;
+    bool m_audioOn = true;
+    bool m_audioDisabled = false;
+    float m_audioVolume = 0.7f;
     core::PostFxSettings m_fx;
 
     std::unique_ptr<core::Simulation> m_sim;
