@@ -1,5 +1,7 @@
 #include "core/SupernovaSim.h"
 
+#include "core/Easing.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -67,6 +69,25 @@ float SupernovaSim::shellBrightness() const {
 
 float SupernovaSim::fade() const {
     return smoothstep(0.f, 0.6f, m_t) * (1.f - smoothstep(kCycleTime - 3.f, kCycleTime, m_t));
+}
+
+CameraPose SupernovaSim::approachPose(float u) const {
+    const float s = std::pow(std::clamp(u, 0.f, 1.f), 1.6f);
+    const float e = smooth01(u);
+    CameraPose p;
+    p.distance = logLerp(95.f, 3.f, s); // ends inside the expanding shell
+    p.yaw = lerp(0.4f, 1.7f, e);
+    p.pitch = lerp(0.3f, 0.08f, e);
+    p.roll = 0.06f * std::sin(u * 5.f);
+    p.fovY = lerp(48.f, 68.f, e);
+    return p;
+}
+
+ApproachReadout SupernovaSim::approachReadout() const {
+    constexpr float kKmPerUnit = 1.496e8f; // one scene unit = 1 AU
+    if (exploded())
+        return {"Blast wave", shockRadius(), kKmPerUnit, true};
+    return {"Progenitor star", std::max(progenitorRadius(), 0.01f), kKmPerUnit, false};
 }
 
 std::vector<Param> SupernovaSim::params() {

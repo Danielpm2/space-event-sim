@@ -30,6 +30,14 @@ public:
     float fade() const;             // smooth loop in/out
     float remnantGlow() const { return exploded() ? 1.f : 0.f; }
 
+    bool supportsApproach() const override { return true; }
+    CameraPose approachPose(float u) const override;
+    // Restart from the collapse and slow the clock so the blast unfolds during the flight.
+    void beginApproach() override { m_t = 0.f; }
+    float approachClockScale() const override { return 0.3f; }
+    float approachImpulse() const override { return flash(); }
+    ApproachReadout approachReadout() const override;
+
     float progenitorMass = 20.f; // solar masses
     float energy = 1.f;          // relative explosion energy
     float clumpiness = 0.6f;

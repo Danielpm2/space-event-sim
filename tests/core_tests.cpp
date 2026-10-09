@@ -1,4 +1,5 @@
 // Unit tests for the GL-free simulation core. No framework: each CHECK counts a failure.
+#include "core/ApproachController.h"
 #include "core/BlackHoleSim.h"
 #include "core/MagnetarSim.h"
 #include "core/MergerSim.h"
@@ -217,6 +218,71 @@ void paramsStartInsideTheirRange() {
     }
 }
 
+void cameraRollStaysOrthonormal() {
+    core::OrbitCamera cam;
+    cam.roll = 0.7f;
+    CHECK_NEAR(glm::length(cam.right()), 1.0, 1e-5);
+    CHECK_NEAR(glm::length(cam.up()), 1.0, 1e-5);
+    CHECK_NEAR(glm::dot(cam.right(), cam.up()), 0.0, 1e-5);
+    CHECK_NEAR(glm::dot(cam.up(), cam.forward()), 0.0, 1e-5);
+
+    const core::CameraPose p{1.f, 0.2f, 55.f, 0.1f, 70.f, glm::vec3(1.f, 2.f, 3.f)};
+    cam.setPose(p);
+    CHECK_NEAR(cam.distance, 55.0, 1e-6); // scripted poses ignore the zoom limits
+    CHECK_NEAR(cam.pose().fovY, 70.0, 1e-6);
+}
+
+void approachFlythrough() {
+    core::SupernovaSim sn;
+    core::BlackHoleSim bh;
+    core::PulsarSim pulsar;
+    CHECK(sn.supportsApproach());
+    CHECK(bh.supportsApproach());
+    CHECK(!pulsar.supportsApproach());
+
+    for (core::Simulation* sim : {static_cast<core::Simulation*>(&sn), static_cast<core::Simulation*>(&bh)}) {
+        float prev = 1e9f;
+        for (float u = 0.f; u <= 1.f; u += 0.05f) { // always closing in
+            const float d = sim->approachPose(u).distance;
+            CHECK(d <= prev);
+            prev = d;
+        }
+    }
+    for (float spin : {0.f, 0.6f, 0.99f})
+        for (float mass : {0.5f, 1.f, 2.f}) {
+            bh.spin = spin;
+            bh.mass = mass;
+            CHECK(bh.approachPose(1.f).distance > 3.f * mass); // outside the photon sphere
+        }
+    CHECK(bh.approachTimeDilation(1e6f) > 0.999f);
+    CHECK(bh.approachTimeDilation(bh.schwarzschildRadius()) < 1e-3f);
+
+    core::ApproachController ctl;
+    const core::CameraPose before = sn.camera.pose();
+    ctl.start(sn);
+    CHECK(ctl.active());
+    CHECK_NEAR(sn.camera.distance, sn.approachPose(0.f).distance, 1e-4);
+    float prevU = 0.f;
+    for (int i = 0; i < 700 && !ctl.finished(); ++i) { // 70 s > duration
+        ctl.update(sn, 0.1);
+        CHECK(ctl.progress() >= prevU);
+        CHECK(ctl.proximity() >= 0.f && ctl.proximity() <= 1.f);
+        prevU = ctl.progress();
+    }
+    CHECK(ctl.finished());
+    CHECK_NEAR(ctl.proximity(), 1.0, 1e-3);
+    CHECK(ctl.shake() > 0.4f); // rattles hardest at the end
+
+    const glm::vec3 held = sn.camera.position();
+    ctl.update(sn, 0.0); // paused: no drift, no motion streaks
+    CHECK(glm::length(ctl.velocity()) == 0.f);
+    CHECK_NEAR(glm::length(sn.camera.position() - held), 0.0, 0.05);
+
+    ctl.stop(sn);
+    CHECK(!ctl.active());
+    CHECK_NEAR(sn.camera.distance, before.distance, 1e-6); // the user's camera comes back
+}
+
 struct Test {
     const char* name;
     void (*fn)();
@@ -228,6 +294,8 @@ int main() {
     const Test tests[] = {
         {"black hole matches Kerr", blackHoleMatchesKerr},
         {"camera orbit and zoom", cameraOrbitAndZoom},
+        {"camera roll stays orthonormal", cameraRollStaysOrthonormal},
+        {"approach flythrough", approachFlythrough},
         {"pulsar lighthouse", pulsarLighthouse},
         {"supernova timeline", supernovaTimeline},
         {"merger inspiral and loop", mergerInspiralAndLoop},

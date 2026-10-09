@@ -1,5 +1,6 @@
 #pragma once
 
+#include "render/ApproachFx.h"
 #include "render/FullscreenTriangle.h"
 #include "render/ImGuiLayer.h"
 #include "render/PostProcess.h"
@@ -7,6 +8,7 @@
 #include "render/SimRenderer.h"
 #include "render/Window.h"
 
+#include "core/ApproachController.h"
 #include "core/PostFxSettings.h"
 #include "core/Simulation.h"
 
@@ -31,6 +33,8 @@ public:
         m_recordPrefix = std::move(prefix);
         m_recordFrames = frames;
     }
+    // Dev aid: begin the cinematic approach at progress `u` (0..1) in the running simulation.
+    void startApproach(float u);
     // Dev aid: turn the camera around the target at `radPerSec`.
     void setAutoOrbit(float radPerSec) { m_autoOrbit = radPerSec; }
     // Dev aid: after `frames` frames write a PPM of the framebuffer and exit.
@@ -46,6 +50,8 @@ private:
     void drawHelp();
     void drawOverlays();
     void drawFps();
+    void drawApproachHud();
+    void toggleApproach();
     bool keyPressedOnce(int key);
 
     Window m_window;
@@ -53,6 +59,8 @@ private:
     Shader m_menuBg;
     FullscreenTriangle m_triangle;
     PostProcess m_post;
+    ApproachFx m_approachFx;
+    core::ApproachController m_approach;
     core::PostFxSettings m_fx;
 
     std::unique_ptr<core::Simulation> m_sim;

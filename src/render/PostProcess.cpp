@@ -154,6 +154,8 @@ void PostProcess::apply(const core::PostFxSettings& settings, int width, int hei
     m_composite.set("uBloom", 1);
     m_composite.set("uBloomIntensity", bloom ? settings.intensity : 0.f);
     m_composite.set("uExposure", settings.exposure);
+    m_composite.set("uVignette", settings.vignette);
+    m_composite.set("uAberration", settings.aberration);
     m_triangle.draw();
 
     checkGl("PostProcess::apply");

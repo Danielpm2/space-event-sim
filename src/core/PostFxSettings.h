@@ -9,6 +9,8 @@ struct PostFxSettings {
     float intensity = 0.6f;
     float exposure = 1.0f;
     int blurPasses = 5;
+    float vignette = 0.f;   // 0..1 edge darkening
+    float aberration = 0.f; // radial colour fringing, fraction of the screen radius
 };
 
 } // namespace core

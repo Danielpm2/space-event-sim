@@ -79,6 +79,7 @@ target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 # --- Core: simulation logic. Links only GLM, so GL/ImGui cannot leak in. ----
 add_library(sim_core STATIC
     src/core/OrbitCamera.cpp
+    src/core/ApproachController.cpp
     src/core/PulsarSim.cpp
     src/core/BlackHoleSim.cpp
     src/core/SupernovaSim.cpp
@@ -95,6 +96,7 @@ add_executable(spacesim
     src/render/Window.cpp
     src/render/Paths.cpp
     src/render/PostProcess.cpp
+    src/render/ApproachFx.cpp
     src/render/Primitives.cpp
     src/render/Shader.cpp
     src/render/ImGuiLayer.cpp

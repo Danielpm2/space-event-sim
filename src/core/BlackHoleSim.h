@@ -23,6 +23,11 @@ public:
     // Accumulated disk animation time (scene time units).
     float diskTime() const { return m_diskTime; }
 
+    bool supportsApproach() const override { return true; }
+    CameraPose approachPose(float u) const override;
+    ApproachReadout approachReadout() const override;
+    float approachTimeDilation(float distance) const override;
+
     float mass = 1.f;          // scale of the hole
     float spin = 0.6f;         // a/M, 0..0.99
     float diskBrightness = 1.f;

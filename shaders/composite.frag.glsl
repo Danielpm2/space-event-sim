@@ -7,6 +7,8 @@ uniform sampler2D uScene;
 uniform sampler2D uBloom;
 uniform float uBloomIntensity; // 0 when bloom is off
 uniform float uExposure;
+uniform float uVignette;
+uniform float uAberration;
 
 // Narkowicz ACES filmic approximation.
 vec3 aces(vec3 x) {
@@ -14,8 +16,13 @@ vec3 aces(vec3 x) {
 }
 
 void main() {
-    vec3 c = max(texture(uScene, vUV).rgb, vec3(0.0));
+    vec2 d = vUV - 0.5;
+    vec3 c = vec3(texture(uScene, vUV - d * uAberration).r,
+                  texture(uScene, vUV).g,
+                  texture(uScene, vUV + d * uAberration).b);
+    c = max(c, vec3(0.0));
     c += max(texture(uBloom, vUV).rgb, vec3(0.0)) * uBloomIntensity;
+    c *= 1.0 - uVignette * smoothstep(0.25, 0.75, length(d));
     c = aces(c * uExposure);
     fragColor = vec4(pow(c, vec3(1.0 / 2.2)), 1.0);
 }

@@ -19,11 +19,12 @@ std::string lower(std::string s) {
 } // namespace
 
 // Usage: spacesim [--sim <name>] [--warp <seconds>] [--screenshot <file.ppm>] [--no-bloom] [--no-ui]
-//                 [--record <prefix> <frames>] [--orbit <rad/s>]
+//                 [--record <prefix> <frames>] [--orbit <rad/s>] [--approach <0..1>]
 int main(int argc, char** argv) {
     try {
         render::App app;
         double warp = 0.0;
+        double approach = -1.0;
         for (int i = 1; i < argc; ++i) {
             if (std::strcmp(argv[i], "--no-bloom") == 0)
                 app.postFx().bloomEnabled = false;
@@ -39,6 +40,8 @@ int main(int argc, char** argv) {
                 app.captureAndExit(argv[i + 1], 90);
             if (std::strcmp(argv[i], "--warp") == 0)
                 warp = std::atof(argv[i + 1]);
+            if (std::strcmp(argv[i], "--approach") == 0)
+                approach = std::atof(argv[i + 1]);
             if (std::strcmp(argv[i], "--sim") != 0)
                 continue;
             const auto& entries = render::registry();
@@ -46,6 +49,8 @@ int main(int argc, char** argv) {
                 if (lower(entries[k].name) == lower(argv[i + 1]))
                     app.launchSimulation(k);
         }
+        if (approach >= 0.0)
+            app.startApproach(static_cast<float>(approach));
         app.warpSimulation(warp);
         return app.run();
     } catch (const std::exception& e) {
