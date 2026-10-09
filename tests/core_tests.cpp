@@ -5,6 +5,7 @@
 #include "core/MergerSim.h"
 #include "core/OrbitCamera.h"
 #include "core/PulsarSim.h"
+#include "core/ShipAudio.h"
 #include "core/SupernovaSim.h"
 
 #include <glm/gtc/constants.hpp>
@@ -325,6 +326,71 @@ void approachFlythrough() {
     CHECK_NEAR(strong.approachShapes()[0].radius / weak.approachShapes()[0].radius, 2.0, 1e-3);
 }
 
+// Renders `seconds` of audio and returns the RMS of the last `tail` seconds.
+double shipAudioRms(core::ShipAudio& a, float seconds, float tail, bool* clean = nullptr) {
+    const int total = static_cast<int>(seconds * 48000.f), tailFrames = static_cast<int>(tail * 48000.f);
+    std::vector<float> buf(static_cast<size_t>(total) * 2);
+    for (int done = 0; done < total; done += 480)
+        a.render(buf.data() + static_cast<size_t>(done) * 2, std::min(480, total - done));
+    double sum = 0.0;
+    bool ok = true;
+    for (int i = 0; i < total * 2; ++i) {
+        ok &= std::isfinite(buf[i]) && std::fabs(buf[i]) <= 1.f;
+        if (i >= (total - tailFrames) * 2)
+            sum += static_cast<double>(buf[i]) * buf[i];
+    }
+    if (clean)
+        *clean = ok;
+    return std::sqrt(sum / (tailFrames * 2));
+}
+
+void shipAudioFollowsTheFlight() {
+    core::ShipAudioParams p;
+
+    core::ShipAudio idle;
+    idle.setParams(p); // not flying: silent
+    CHECK(shipAudioRms(idle, 1.f, 1.f) == 0.0);
+
+    p.active = 1.f;
+    bool clean = false;
+    core::ShipAudio calm;
+    calm.setParams(p);
+    const double calmRms = shipAudioRms(calm, 4.f, 1.f, &clean);
+    CHECK(clean);
+    CHECK(calmRms > 0.003); // the ambient bed is audible
+    CHECK(calmRms < 0.3);   // but stays in the background
+
+    p.shake = 1.f;
+    core::ShipAudio rattling;
+    rattling.setParams(p);
+    CHECK(shipAudioRms(rattling, 4.f, 1.f, &clean) > calmRms * 1.5);
+    CHECK(clean);
+
+    p.shake = 0.f;
+    p.speed = 1.f;
+    core::ShipAudio fast;
+    fast.setParams(p);
+    CHECK(shipAudioRms(fast, 4.f, 1.f) > calmRms);
+
+    // A shock wave booms once, then fades.
+    p.speed = 0.f;
+    core::ShipAudio blast;
+    blast.setParams(p);
+    shipAudioRms(blast, 3.f, 0.1f);
+    p.impulse = 1.f;
+    blast.setParams(p);
+    CHECK(shipAudioRms(blast, 0.4f, 0.3f) > calmRms * 1.5);
+
+    // Losing the ship silences everything once the static has died away.
+    p.impulse = 0.f;
+    core::ShipAudio lost;
+    lost.setParams(p);
+    shipAudioRms(lost, 3.f, 0.1f);
+    p.deathFade = 1.f;
+    lost.setParams(p);
+    CHECK(shipAudioRms(lost, 4.f, 1.f) < 1e-3);
+}
+
 struct Test {
     const char* name;
     void (*fn)();
@@ -338,7 +404,7 @@ int main() {
         {"camera orbit and zoom", cameraOrbitAndZoom},
         {"camera roll stays orthonormal", cameraRollStaysOrthonormal},
         {"approach flythrough", approachFlythrough},
-        {"pulsar lighthouse", pulsarLighthouse},
+        {"ship audio follows the flight", shipAudioFollowsTheFlight},        {"pulsar lighthouse", pulsarLighthouse},
         {"supernova timeline", supernovaTimeline},
         {"merger inspiral and loop", mergerInspiralAndLoop},
         {"magnetar field and flare", magnetarFieldAndFlare},

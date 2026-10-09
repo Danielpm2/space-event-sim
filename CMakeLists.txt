@@ -80,6 +80,7 @@ target_link_libraries(glad PUBLIC ${CMAKE_DL_LIBS})
 add_library(sim_core STATIC
     src/core/OrbitCamera.cpp
     src/core/ApproachController.cpp
+    src/core/ShipAudio.cpp
     src/core/PulsarSim.cpp
     src/core/BlackHoleSim.cpp
     src/core/SupernovaSim.cpp
