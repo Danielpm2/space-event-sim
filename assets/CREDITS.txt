@@ -3,6 +3,6 @@ licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), based on NASA
 
 fonts/Roboto-*.ttf: Roboto by Google, licensed Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
 
-Spaceship_interior.glb (not in the repository): "Spaceship interior" from CGTrader,
+Spaceship_interior.glb: "Spaceship interior" from CGTrader,
 https://www.cgtrader.com/free-3d-models/space/spaceship/spaceship-interior-bb77f232-02a0-498f-8a05-660d78a1a98c
-Used under the licence shown on that page; author and licence are not recorded here yet.
+Free for use, sale and redistribution per the project owner; author not recorded here.

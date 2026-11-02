@@ -79,7 +79,7 @@ Dev aids: `--warp <seconds>` fast-forwards the simulation, `--screenshot <file.p
 
 The supernova and the black hole can be flown past in first person. In the Camera section, click or drag on the grid to choose where to pass (the event is at the centre; the black hole's disk is the orange bar, the red disc is fatal), then press A. The pilot's gaze tracks the event and the mouse glances away. The ship rattles harder as it nears the event, with a procedural ambient engine bed, rumble, a shock-wave boom and static if the ship is lost. Passing too close fades to black; R tries again.
 
-If `assets/Spaceship_interior.glb` exists it is loaded (glTF 2.0, decoded on a worker thread) and flown as the ship: the head turns inside a fixed-heading cockpit and the event is seen through the canopy. Without the file the built-in procedural cockpit is used. The model is not in the repository; download it from the page listed in `assets/CREDITS.txt` and save it under that name. `--ship-preview <x> <y> <z> <yaw> <pitch>` draws the model from a free camera for checking placement.
+If `assets/Spaceship_interior.glb` exists it is loaded (glTF 2.0, decoded on a worker thread) and flown as the ship: the head turns inside a fixed-heading cockpit and the event is seen through the canopy. Without the file the built-in procedural cockpit is used. The model is credited in `assets/CREDITS.txt`. `--ship-preview <x> <y> <z> <yaw> <pitch>` draws the model from a free camera for checking placement.
 
 ## Tests
 
