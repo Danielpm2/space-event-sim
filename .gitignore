@@ -3,3 +3,6 @@ cmake-build-*/
 .idea/
 .cache/
 .vscode/
+
+# Third-party ship model; download it yourself (see README)
+assets/Spaceship_interior.glb
